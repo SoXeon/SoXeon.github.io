@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>iOS Animation 初窥 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="论动画在App中的重要性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS Animation 初窥">
+<meta property="og:url" content="http://yoursite.com/2015/03/10/iOS-Animation-初窥/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="论动画在App中的重要性">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/16103231471565_2519461_14.jpg">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/5128975_5128975_1283946463671.jpg">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/dddddd.png">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/lllalll.png">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/coordinate-system1.jpg">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/3DDemo.jpg">
+<meta property="og:updated_time" content="2015-03-12T18:21:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS Animation 初窥">
+<meta name="twitter:description" content="论动画在App中的重要性">
+<meta name="twitter:image" content="http://7te818.com1.z0.glb.clouddn.com/16103231471565_2519461_14.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-iOS-Animation-初窥" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/03/10/iOS-Animation-初窥/" class="article-date">
+  <time datetime="2015-03-10T12:41:04.000Z" itemprop="datePublished">2015-03-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      iOS Animation 初窥
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>论动画在App中的重要性</p>
+<a id="more"></a>
+<hr>
+<p>##引言</p>
+<ul>
+<li><p>一款App是否足够吸引人一方面是需要丰富的内容，另一方面就是要足够人性化的交互，还有一些锦上添花的动画效果，在这里我们讨论一下关于Animation的基本实现，推荐大家试用FaceBook Paper，里面包含了大量的非原生动画效果，Paper团队甚至封装了相应的<a href="https://github.com/facebook/pop" target="_blank" rel="external">开源库Pop</a>，让开发者接入自定义动画动画也十分简便。动画的接入要适当，否则用户面对眼花缭乱的动画效果，都会无从下手。这里有个基于Pop的<a href="https://github.com/schneiderandre/popping" target="_blank" rel="external">Demo</a></p>
+</li>
+<li><p>当然导入一个复杂的第三方库可能有些小题大做，所以我们开始从最基本的创作Animation开始</p>
+</li>
+<li><p>在iOS设备上画动画可以分为以下几种方式，最直接的时在UIView上实现动画,假如实现效果复杂可以在Layer下绘制，此外iOS7还推出了UIDynamicAnimator，实现类似游戏中的诸多动画效果</p>
+</li>
+<li>动画不是那种天花乱坠式，而是在一些细节之处也添加动画，例如在view之间的约束，在设备旋转过程中调整对应动画，viewController之间的切换也是可以自定义transitioning</li>
+</ul>
+<p>##UIView Animations</p>
+<p>####UIView可以设置动画的属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th style="text-align:center">改变</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frame &amp; bounds &amp; center</td>
+<td style="text-align:center">改变View的位置及自身大小</td>
+</tr>
+<tr>
+<td>transform</td>
+<td style="text-align:center">改变缩放scale，旋转角度rotate(3D效果需要用Core Animation)</td>
+</tr>
+<tr>
+<td>alpha</td>
+<td style="text-align:center">改变透明度</td>
+</tr>
+<tr>
+<td>backgroundColor</td>
+<td style="text-align:center">改其背景色</td>
+</tr>
+</tbody>
+</table>
+<p>最直接的做法</p>
+<pre><code>
+//基本
+UIView.animateWithDuration(0.5, animations: {
+  self.yourView.bounds.size.witdh += 70.0
+  self.yourView.backgroundColor = UIColor.greenColor()
+  self.yourView.alpha = 0.5
+})
+
+//View和View之间的过渡
+UIView.transitionWithView(containerView, duration: 0.2, options: .TransitionFlipFromLeft, animations: { _ in fromView.removeFromSuperview(); containerView.addSubview(toView) }, completion: nil)
+
+
+//入门Option,delay,option自由选择
+UIView.animateWithDuration(0.5, delay: 0.4, options: .Repeat, animations:{
+    self.yourView.center.x + = 30.0
+},completion: nil)
+
+
+//进阶，Spring属性可以调整动画的弹簧效果
+UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.0, options: nil, animations: {
+self.loginButton.bounds.size.width += 80.0 
+label的文字可以进行一些过渡效果
+}, completion: nil)
+
+
+//高阶，复杂动画组合之KeyFrame
+UIView.animateKeyframesWithDuration(1.5, delay: 0.0, options: nil, animations: {
+//添加KeyFrames，options中可以选择不同的限制
+
+//1
+UIView.addKeyframeWithRelativeStartTime(0.0, relativeDuration: 0.25, animations: {
+self.planeImage.center.x += 80.0
+self.planeImage.center.y -= 10.0 
+})
+
+//2
+UIView.addKeyframeWithRelativeStartTime(0.1, relativeDuration: 0.4) { self.planeImage.transform = CGAffineTransformMakeRotation(CGFloat(-
+M_PI_4/2)) }
+
+}, completion: nil)
+
+</code></pre>
+
+
+<p>需要注意的是动画一旦开始就没有办法暂停</p>
+<hr>
+<p>##Auto Layout<br>为AutoLayout Aonstraints创建动画的首要条件就是，你要先用了AutoLayout</p>
+<p>动画的创建方式也类似</p>
+<pre><code>
+//对已有constant作出对应修改操作 or 创建新的contsant
+UIView.animateWithDuration(1.0, delay: 0.0, usingSpringWithDamping: 0.4, initialSpringVelocity: 10.0, options: .CurveEaseIn, animations: {
+self.view.layoutIfNeeded() }, completion: nil)
+
+</code></pre>
+
+
+<p>其中的layoutIfNeed()十分关键，因为这样UIKit才会知道你修改了layout</p>
+<hr>
+<p>##Layer Animation<br>如果说View是高度定制化的给你简单接口的就像这样<img src="http://7te818.com1.z0.glb.clouddn.com/16103231471565_2519461_14.jpg" alt=""><br>那CALayer就是这样<img src="http://7te818.com1.z0.glb.clouddn.com/5128975_5128975_1283946463671.jpg" alt=""></p>
+<p>Layer的强大之处是可以设置更多的属性，实现3D效果，添加mask，添加shadow，并且这一切都是建立在直接调用GPU来达到快速相应，一切都非常简便，其实每个View都有Layer，我们在Layer层面做的修改也可以展现在View上</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>size &amp; position</td>
+<td style="text-align:center">改变layer的位置及自身大小</td>
+</tr>
+<tr>
+<td>transform</td>
+<td style="text-align:center">改2D,3D情况下的现实效果</td>
+</tr>
+<tr>
+<td>shadow</td>
+<td style="text-align:center">改变阴影</td>
+</tr>
+<tr>
+<td>border</td>
+<td style="text-align:center">边框效果</td>
+</tr>
+<tr>
+<td>opacity</td>
+<td style="text-align:center">改其透明度</td>
+</tr>
+</tbody>
+</table>
+<pre><code>
+//记得引入QuartzCore
+//基本
+let ownStyle = CABasicAnimation(keyPath:"position.x")
+ownStyle.fromValue = -view.bounds.size.width/2
+ownStyle.toValue = view,bounds.size.width/2
+ownStyle.duration = 0.5
+yourView.layer.addAnimation(ownStyle, forKey: nil)
+//入门，动画之间存在时间差，我们可以设置fillMode和beginTime来实现特定效果
+ownStyle.beginTime = CACurrentMediaTime() + 0.3
+ownStyle.fillMode = KCAFillModeRemoved //default
+//kCAFillMode主要作用就是控制你动画在开始和结束时候的一些效果
+
+//进阶 CAAnimation delegate pattern
+func animationDidStop & animationDidStart
+//与block中的相类似，你也可以利用KVC特性设置相应内容
+ownStyle.setValue(yourView.layer, forKey:"layer")
+ownStyle.setValue("name", forKey:"form")
+override func animationStop(anima: CAAnimation!, finished flag: Bool) {
+    if let name = ownStyle.valueForKey("form") as? String {
+        if name = "form" {
+            //add new animation and add it to the layer
+        }    
+    }
+}
+
+//addAnimation中的Key作用，标示动画，在恰当的时候移除对应动画，而不是移除动画效果本身
+
+
+//高阶，AnimationGroup
+let groupAnimation = CAAnimationGroup()
+let oneAnimation = CABasicAnimation(keyPath:"transform.scale")
+//blablabla
+
+let twoAnimation = CABasicAnimation(keyPath:"opacity")
+//detail set for twoAnimation
+
+//sey timingFunction
+groupAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
+
+//这么只能一起做动画，这里内部没有时间顺序
+groupAnimation.animations = [oneAnimation, twoAnimation] 
+yourView.layer.addAnimation(groupAnimation, forKey: nil)
+
+//CAKeyFrame,关键帧动画Layer级别效果
+let wobble = CAKeyframeAnimation(keyPath: "transform.rotation") wobble.duration = 0.25
+wobble.repeatCount = 4
+
+//比View的keyFrame设置方便多了
+//values与keyTimes一一对应
+wobble.values = [0.0, -M_PI_4/4, 0.0, M_PI_4/4, 0.0]
+wobble.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0] heading.layer.addAnimation(wobble, forKey: nil)
+
+//不过坑爹的是这样，比如CGPoint，CGSize，CGRect，CATransform3D，都要解包
+let move = CABasicAnimation(keyPath: "position")
+move.duration = 1.0
+move.fromValue = NSValue(CGPoint:CGPoint(x:100.0, y:100.0))
+move.toValue = NSValue(CGPoint:CGPoint(x:200.0, y:200.0))
+
+</code></pre>
+
+<p>有木有发现现在很多App中用户头像都是圆形的QQ的是，微博个人主页，instagram,Path等等,这里还涉及到好多设计心理学的东西这里给个链接<a href="http://www.zhihu.com/question/20956411" target="_blank" rel="external">圆形头像为何流行起来–知乎</a></p>
+<p>废话不多说直接上代码吧，so easy,简单说来就是加一个mask,可这好像和动画没有什么关系，听我慢慢道来</p>
+<pre><code>
+//1
+_imageView.frame = CGRectMake(0, 0, iconWH, iconWH);
+_imageView.layer.cornerRadius = _imageView.frame.size.width / 2;
+_imageView.clipsToBounds = YES;
+_imageView.layer.borderWidth = 2.0f;
+_imageView.layer.borderColor = [UIColor whiteColor].CGColor;
+
+//2
+ let photoLayer = CALayer()
+ let circleLayer = CAShapeLayer()
+ let maskLayer = CAShapeLayer()
+
+  override func didMoveToWindow() {
+    layer.addSublayer(photoLayer)
+    photoLayer.mask = maskLayer
+    layer.addSublayer(circleLayer)
+    addSubview(label)
+  }
+
+  //设置image的Frame
+  photoLayer.frame = CGRect(
+      x: (bounds.size.width - image.size.width + lineWidth)/2,
+      y: (bounds.size.height - image.size.height - lineWidth)/2,
+      width: image.size.width,
+      height: image.size.height)
+
+  //画圆，用UIBezierPath
+  circleLayer.path = UIBezierPath(ovalInRect: bounds).CGPath
+    circleLayer.strokeColor = UIColor.whiteColor().CGColor
+    circleLayer.lineWidth = lineWidth
+    circleLayer.fillColor = UIColor.clearColor().CGColor
+
+  //设置对应的path
+    maskLayer.path = circleLayer.path
+    maskLayer.position = CGPoint(x: 0.0, y: 10.0)
+
+</code></pre>
+
+<p>三者对应关系circleLayer在顶，maskLayer在中，photoLayer在底</p>
+<p>如果你要实现这个imageView如在撞击墙壁时，mask产生变化，变成方形，这样一个碰撞式的动画还是很带感的</p>
+<pre><code>
+let maskLayer = CAShapeLayer()
+imageView.mask = maskLayer
+
+let squarePath = UIBezierPath(rect: bounds).CGPath
+let morph = CABasicAnimation(keyPath: "path")
+morph.duration = 0.25
+morph.fromValue = circleLayer.path
+morph.toValue = squarePath
+
+circleLayer.addAnimation(morph, forKey: nil)
+maskLayer.addAnimation(morph, forKey: nil)
+</code></pre>
+
+<p>平面效果是否不够酷炫，那么来足够眼前一亮的的 </p>
+<p>3D效果,这里要扯点美术内容了，透视法</p>
+<p>目前的屏幕还是2D平面，也无法实现所谓全息影像</p>
+<p>那么在2D屏幕下的3D就需要透过视觉差来投影出来3D效果</p>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/dddddd.png" alt=""></p>
+<p> 当相机距离很小时候拉伸效果明显，后者距离很大</p>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/lllalll.png" alt=""></p>
+<pre><code>
+     var identity = CATransform3DIdentity
+     //m34啥意思，简单说来就是你看屏幕视角的远近，这里是指近大远小，-1.0/1000啥概念，这里1000是指相机距离，距离越小，近大远效果越明显
+       identity.m34 = -1.0/1000
+
+    //percent在这里是指你在移动当前View时候frame.orgin.x与一固定值如width之间的比例，这样view的移动就产生相应不同程度的过渡效果
+    let remainingPercent = 1.0 - percent
+    let angle = remainingPercent * CGFloat(-M_PI_2)
+    //这里是沿着y轴旋转，这里不得不说一下iOS中坐标系是左手坐标系
+
+    let rotationTransform = CATransform3DRotate(identity, angle, 0.0, 1.0, 0.0)
+    let translationTransform = CATransform3DMakeTranslation(menuWidth * percent, 0, 0)
+    //还有诸如    CATransform3DTranslate，CATransform3DScale相关设置都可以尝试
+    menuButton.imageView.layer.transform =  CATransform3DConcat(rotationTransform, translationTransform)
+
+</code></pre>
+
+<p>左边是左手坐标系，右边是我们惯用的右手坐标系，两者区别在于z轴的方向，iOS是左手系</p>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/coordinate-system1.jpg" alt=""></p>
+<p>view的转动效果如下，x,y,z轴你可以设置根据相应的轴产生不同动画以及组合动画 </p>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/3DDemo.jpg" alt=""></p>
+<hr>
+<p>致此，iOS的动画初窥到此为止，发现具体到动画中矩阵转换还是有点搞不清楚，后续还会有更多关于iOS Animation的内容</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/03/10/iOS-Animation-初窥/" data-id="cinoe4rtj0009e5isb4v1zbgp" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/07/24/LinkMap分析初窥/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          LinkMap分析初窥
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/01/31/iOS控件系列之刷新控件/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">iOS控件系列之刷新控件</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/05/01/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/30/从Web-Mark-up-到-Universal-Link/">从Web Mark up 到 Universal Link</a>
+          </li>
+        
+          <li>
+            <a href="/2015/12/04/iOS9-Search-link-anythings/">iOS9 Search link anythings</a>
+          </li>
+        
+          <li>
+            <a href="/2015/08/09/AsyncDisplayKit随想/">AsyncDisplayKit随想</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/24/LinkMap分析初窥/">LinkMap分析初窥</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

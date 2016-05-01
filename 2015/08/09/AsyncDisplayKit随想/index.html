@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>AsyncDisplayKit随想 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="App的UIView抽象，AsyncDisplayKit能为开发者提供一种App图形性能优化的新思路。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AsyncDisplayKit随想">
+<meta property="og:url" content="http://yoursite.com/2015/08/09/AsyncDisplayKit随想/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="App的UIView抽象，AsyncDisplayKit能为开发者提供一种App图形性能优化的新思路。">
+<meta property="og:image" content="http://7te818.com1.z0.glb.clouddn.com/node-view-layer.png">
+<meta property="og:updated_time" content="2015-08-09T08:19:48.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AsyncDisplayKit随想">
+<meta name="twitter:description" content="App的UIView抽象，AsyncDisplayKit能为开发者提供一种App图形性能优化的新思路。">
+<meta name="twitter:image" content="http://7te818.com1.z0.glb.clouddn.com/node-view-layer.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-AsyncDisplayKit随想" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/08/09/AsyncDisplayKit随想/" class="article-date">
+  <time datetime="2015-08-09T08:17:20.000Z" itemprop="datePublished">2015-08-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      AsyncDisplayKit随想
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>App的UIView抽象，AsyncDisplayKit能为开发者提供一种App图形性能优化的新思路。</p>
+<a id="more"></a>
+<hr>
+<p>###1.引子<br>&emsp;&emsp;Facebook的Paper团队想必大家都耳熟能详，丰富的交互动画以及多种手势操作的运用，让Paper应用独树一帜，那些眼前一亮的动画是由底层的Pop动画库提供支持的，同时为了达到复杂动画下应用流畅，必须做好深度优化，然而系统提供的UIView没有办法达到希望的效果，AsyncDisplayKit适时的推出让App的流畅度和响应性都可以达到一个新的高度，也让Paper这类应用的完整用户体验在不同硬件级别的苹果设备上得到较好的还原。下文中AsyncDisplayKit由ASDK代替。</p>
+<p><strong>ASDK主要运用场景：</strong></p>
+<ol>
+<li><p>复杂多元素视图界面。</p>
+</li>
+<li><p>低性能硬件设备。</p>
+</li>
+</ol>
+<p>###2.ASDK使用入门<br><a href="http://asyncdisplaykit.org/guide/" target="_blank" rel="external">官方文档</a><br><a href="http://www.raywenderlich.com/107310/asyncdisplaykit-tutorial-node-hierarchies" target="_blank" rel="external">Raywenderlich AsyncDisplaykit Tutorial 1</a>这篇深入分析了ASDK强大之处！<br><a href="http://www.raywenderlich.com/86365/AsyncDisplayKit-tutorial-achieving-60-fps-scrolling" target="_blank" rel="external">Raywenderlich AsyncDisplayKit Tutorial 2</a></p>
+<ul>
+<li>ASDK的基本单元是Node，Node是UIView以及对应Layer的抽象层，与UIView的最大区别在于，Node是线程安全的，并可以设置对应的Node内部层次后在后台线程中运行，而UIView只能将大量的耗时操作全都放在主线程上进行。</li>
+<li>ASDisplayNode对view和Layer拥有很好的抽象，你可以很方便的访问CALayer属性，下图中展示了主要的ASDK与UIView中一一映射。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>AsyncDisplayKit</th>
+<th style="text-align:center">UIView</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASDisplayNode</td>
+<td style="text-align:center">UIView subclass</td>
+</tr>
+<tr>
+<td>ASControlNode</td>
+<td style="text-align:center">UIControl</td>
+</tr>
+<tr>
+<td>ASImageNode</td>
+<td style="text-align:center">UIImageView</td>
+</tr>
+<tr>
+<td>ASTextNode(TextKit)</td>
+<td style="text-align:center">UITextView</td>
+</tr>
+<tr>
+<td>ASTableView</td>
+<td style="text-align:center">UITableView</td>
+</tr>
+<tr>
+<td>ASCollectionView</td>
+<td style="text-align:center">UICollectionView</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>最新的ASDK中开始自己实现了一套AutoLayout，有别于Apple官方的AutoLayout，还是需要适应，不过注释写的比较清楚，可以接受，但无形中增加了学习成本以及日后的维护成本。</li>
+<li>在控制View的frame的时候，ASDisplayNode采用了另外一套形式，分别在以下两个方法中。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// perform expensive sizing operations on a background thread</span><br><span class="line">- (CGSize)calculateSizeThatFits:(CGSize)constrainedSize</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// main-thread layout</span><br><span class="line">- (void)layout</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>###3.ASDK原理浅析<br>&emsp;&emsp;AsyncDisplayKit 的Node所处的位置可以让其在后台线程中有进行高消耗运算，最后将尽量小损耗的运算放在主线程上操作。<br><img src="http://7te818.com1.z0.glb.clouddn.com/node-view-layer.png" alt=""><br><strong><a href="http://asyncdisplaykit.org/guide/5/" target="_blank" rel="external">Node Architecture</a>(以下为部分翻译)</strong><br>&emsp;&emsp;创建一个Node并不会创建它的view-layer部分，这是能够以很低成本的创建nodes并且在后台线程中的原因，当你要使用一个Node的UIView和CALayer属性时，你可以通过一个代理对象如_ASPendingState,这样可以预先匹配了UIView和CALayer的默认值。</p>
+<p>&emsp;&emsp;Nodes由ASDisplayLayer和ASDisplayView构成，这些都是轻量级的创建，并添加到其他各自的层次结构，并提供集成点，允许节点充当全面的views或layers。</p>
+<p>&emsp;&emsp;当核心动画的要求要_ASDisplayLayer绘制自己，请求会转发到其节点。除非异步显示已被禁用，实际绘制调用不会立即发生或在主线程中发生。相反，一个显示Block将被添加到一个后台队列。这些block并行执行，但可以启用ASDISPLAYNODE_DELAY_DISPLAY在ASDisplayNode （ AsyncDisplay ），以连载的渲染系统进行调试。</p>
+<p>&emsp;&emsp;在ASTableView方面Cell重用很关键，但是ASTableView内部做的很好，有效的做了资源利用，就是单个Cell内部Node释放与重用问题，特别是Layer树中Layer的释放问题。资源的释放与重用是性能提升的一种有效途径。</p>
+<p>&emsp;&emsp;不能在ASNode内部直接创建一个UIView实例，这样会直接Crash。</p>
+<p>&emsp;&emsp;容器Node内部的层级结构，通过设置node.shouldRasterizeDescendants = true可以实现，那些子Node可以通过containerNode.addSubnode(suclassNode),添加Node的顺序很关键，最先添加的Node会被后续的阻挡。</p>
+<p>&emsp;&emsp;除了绘制操作会损耗性能意外，在复杂屏幕上布局计算也非常昂贵,ASDK可以做到布局和渲染都不在主线程上，太赞了。</p>
+<p>&emsp;&emsp;然并卵，对于如何明确使用ASDK，首先你要对标准UIKit的性能瓶颈有所足够了解。</p>
+<p>###4.ASDK的一些问题</p>
+<p>1.autoLayout支持<br>&emsp;&emsp;最初ASDK没有支持AutoLayout，然而在后续版本中提供了对应的支持。下面展示了对应的两种不同形式的frame的设置形式。</p>
+<ul>
+<li>no-autoLayout:</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (CGSize)calculateSizeThatFits:(CGSize)constrainedSize</span><br><span class="line">&#123;</span><br><span class="line">  CGSize imageSize = CGSizeMake(kImageSize, kImageSize);</span><br><span class="line">  CGSize textSize = [_textNode measure:CGSizeMake(constrainedSize.width - kImageSize - 2 * kOuterPadding - kInnerPadding,</span><br><span class="line">                                                  constrainedSize.height)];</span><br><span class="line"></span><br><span class="line">  // ensure there&apos;s room for the text</span><br><span class="line">  CGFloat requiredHeight = MAX(textSize.height, imageSize.height);</span><br><span class="line">  return CGSizeMake(constrainedSize.width, requiredHeight + 2 * kOuterPadding);</span><br><span class="line">&#125;</span><br><span class="line">``` </span><br><span class="line">* ASDK的AutoLayout抽象：</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>(ASLayoutSpec <em>)layoutSpecThatFits:(ASSizeRange)constrainedSize<br>{<br>ASRatioLayoutSpec </em>imagePlaceholder = [ASRatioLayoutSpec newWithRatio:1.0 child:_imageNode];<br>imagePlaceholder.flexBasis = ASRelativeDimensionMakeWithPoints(kImageSize);</p>
+<p>_textNode.flexShrink = YES;</p>
+<p>return<br>[ASInsetLayoutSpec<br> newWithInsets:UIEdgeInsetsMake(kOuterPadding, kOuterPadding, kOuterPadding, kOuterPadding)<br> child:<br> [ASStackLayoutSpec<br>  newWithStyle:{</p>
+<pre><code>.direction = ASStackLayoutDirectionVertical,
+.spacing = kInnerPadding
+</code></pre><p>  }<br>  children:@[imagePlaceholder, _textNode]]];<br>}<br>```<br>2.<a href="https://github.com/facebook/AsyncDisplayKit/issues/49" target="_blank" rel="external">iOS6 支持问题</a>:<br>ASTextNode中运用到了一些TextKit的特性，而这些特性CoreText的实现效果并不好，所以Paper团队放弃了TextNode这块对iOS6的支持，其他的AS*还是可以在iOS6环境下运行的，这里要吐槽一下，Facebook从去年底起选择不在支持iOS6，选择性放弃了小于5%的iOS6用户，同时天猫iPadApp在适配多iOS版本中还是遇到了很多坑，适配Reactive-Native中时iOS6中的JavascriptCore.framework产生风险，总之坑很多。</p>
+</li>
+</ul>
+<p>###5.iOS性能优化展望<br>iOS图形加速优化，首先需要找到性能薄弱点，通过Instrument的Allocations,Time Profiler,Leaks配合可以观察出运行的App具体性能薄弱点在哪，是CPU损耗过多还是GPU的损耗占更多，这样才能得出接下来优化方向，否则就南辕北辙了。<br>下面是三个具体优化的链接：</p>
+<ol>
+<li><a href="http://www.cocoachina.com/ios/20150729/12795.html" target="_blank" rel="external">TableView的优化10Tips</a></li>
+<li><a href="http://www.hrchen.com/2013/05/performance-with-instruments/" target="_blank" rel="external">iOS App性能优化</a></li>
+<li><a href="http://www.raywenderlich.com/31166/25-ios-app-performance-tips-tricks" target="_blank" rel="external">iOS app performance tips tricks</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/08/09/AsyncDisplayKit随想/" data-id="cinoe4rt60003e5isf2g882hy" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/12/04/iOS9-Search-link-anythings/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          iOS9 Search link anythings
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/07/24/LinkMap分析初窥/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">LinkMap分析初窥</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/05/01/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/30/从Web-Mark-up-到-Universal-Link/">从Web Mark up 到 Universal Link</a>
+          </li>
+        
+          <li>
+            <a href="/2015/12/04/iOS9-Search-link-anythings/">iOS9 Search link anythings</a>
+          </li>
+        
+          <li>
+            <a href="/2015/08/09/AsyncDisplayKit随想/">AsyncDisplayKit随想</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/24/LinkMap分析初窥/">LinkMap分析初窥</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

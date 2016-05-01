@@ -1,0 +1,926 @@
+<!doctype html>
+<html class="theme-next use-motion ">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.2"/>
+
+
+    <meta name="description" content="DP's blog | iOS | ObjC | Swift" />
+
+
+
+  <meta name="keywords" content="Hexo,next" />
+
+
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.2" />
+
+
+
+
+  <title> iOS控件系列之刷新控件 // So Xeon's Blog </title>
+</head>
+
+<body>
+<!--[if lte IE 8]> <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'> <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode"><img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820" alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari." style='margin-left:auto;margin-right:auto;display: block;'/></a></div> <![endif]-->
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <div id="header" class="header">
+      <div class="header-inner">
+        <h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand">
+      <span class="logo">
+        <i class="icon-logo"></i>
+      </span>
+      <span class="site-title">So Xeon's Blog</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+
+  <ul id="menu" class="menu">
+     
+    
+      
+      <li class="menu-item menu-item-home">
+        <a href="/">
+          <i class="menu-item-icon icon-home"></i> <br />
+          Home
+        </a>
+      </li>
+    
+      
+      <li class="menu-item menu-item-archives">
+        <a href="/archives">
+          <i class="menu-item-icon icon-archives"></i> <br />
+          Archives
+        </a>
+      </li>
+    
+      
+      <li class="menu-item menu-item-tags">
+        <a href="/tags">
+          <i class="menu-item-icon icon-tags"></i> <br />
+          Tags
+        </a>
+      </li>
+    
+  </ul>
+
+
+      </div>
+    </div>
+
+    <div id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
+              iOS控件系列之刷新控件
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          Posted on 2015-01-31
+        </span>
+
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/02/01/iOS控件系列之刷新控件/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/02/01/iOS控件系列之刷新控件/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <p>最近有个需求要自定一个下拉刷新控件，所以学习过程中便记录自己的想法</p>
+<a id="more"></a>
+
+
+<hr>
+<h2 id="1-1iOS标准刷新控件_UIRefreshControl">1.1iOS标准刷新控件 UIRefreshControl</h2>
+<p>原本iOS系统里面没有下拉刷新控件这一说，先是第三方控件中出现，然后越发火热，最后官方才推出了一个这样的相对自由度比较低的控件，通过其头文件就可以看出来，自由定制程度比较低，但是也可以另辟蹊径。</p>
+<p> <img src="http://7te818.com1.z0.glb.clouddn.com/UIRefreshControl_h.png" alt="头文件"></p>
+<p> 看似没有太多可以修改的地方，实则可以切换背景图片，以达到自定义的效果，实际上就是替换背景图片</p>
+<pre><code> UIImageView *backgroundImageView = <span class="string">[[UIImageView alloc] initWithImage:[UIImage imageWithName:@"xxx.png"]]</span>;
+ [self.refreshControl insertSubView:backgroundImageView atIndex:<span class="number">0</span>];
+</code></pre><p>这里有一个相关事例，就是使用官方刷新控件做出来的效果</p>
+<p><a href="http://www.jackrabbitmobile.com/design/ios-custom-pull-to-refresh-control/" target="_blank" rel="external">文章&amp;&amp;代码</a></p>
+<hr>
+<h2 id="1-2眼花缭乱的第三方刷新控件">1.2眼花缭乱的第三方刷新控件</h2>
+<p>接下来我们来一一介绍</p>
+<ul>
+<li>MJRefreshControl, tableView和collectionView都可以快速集成，这边有个坑<a href="http://blog.csdn.net/lorwy/article/details/38303139" target="_blank" rel="external">多次调用MJRefreshControl造成的Crash</a>,亲身经历，所以在这里提醒大家，这个Crash的原因也是之后要讲到的KVO的关系，也是刷新控件的一大精髓。<a href="http://code4app.com/ios/%E5%BF%AB%E9%80%9F%E9%9B%86%E6%88%90%E4%B8%8B%E6%8B%89%E4%B8%8A%E6%8B%89%E5%88%B7%E6%96%B0/52326ce26803fabc46000000" target="_blank" rel="external">控件Code4App地址</a></li>
+</ul>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/iOS___iPhone___iPad_仅需一行代码就可以为UITableView加上下拉刷新或者上拉刷新功能代码_快速集成下拉上拉刷新_-_列表（Table）开源代码_-_Code4App_com.png" alt="MJRefreshControl截图"></p>
+<ul>
+<li>刷新控件是一个很好的吸引用户注意力的控件，一方面让用户觉得App有意思，另外，用户会一定程度上忽视App刷新数据时所耗费的时间，下拉刷新个性迥异，时不时还有彩蛋，确实是一个很好的App交互的创新点，<strong>GIFRefreshControl</strong>是一个利用类似的GiF效果的刷新控件，只需要你一套图，或者直接一个gif文件，你就可以转成一套图片，优点，引入文件就仅有一个Category，缺点，一套图占用存储控件太大了，本人项目中也用到了，感谢作者。<a href="https://github.com/cyndibaby905/GIFRefreshControl" target="_blank" rel="external">控件GitHub地址</a><br><img src="http://7te818.com1.z0.glb.clouddn.com/iOS___iPhone___iPad_利用_Gif_图实现多种效果很不错的下拉刷新动画代码_GIFRefreshControl_-_视图效果（View_Effects）开源代码_-_Code4App_com.png" alt="GifRefreshControl应用截图"></li>
+</ul>
+<p>*最后来个极致酷炫的，说实话看到第一眼，没想到怎么实现的=_=,废话不多，直接上图,<a href="https://github.com/coolbeet/CBStoreHouseRefreshControl" target="_blank" rel="external">GitHub地址</a></p>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/iOS___iPhone___iPad_CBStoreHouseRefreshControl是一个可完全自定义的下拉刷新控件代码_CBStoreHouseRefreshControl_-_滚动视图（ScrollView）开源代码_-_Code4App_com.png" alt="酷炫下拉刷新控件"></p>
+<hr>
+<h2 id="1-3刷新控件深入分析">1.3刷新控件深入分析</h2>
+<p>看到这么多帅气的刷新控件，自己看着也跃跃欲试，如何来做一个这样的刷新控件呢，那么我们回到最根本的问题，刷新控件的目的，刷新数据，一般用于tableView，CollectionView，类似微博、淘宝的客户端都有类似功能的控件，那些看似华丽的控件外表实则是不够的，我们还是看代码分析，那才是王道，Talking is cheap, show me your code.</p>
+<blockquote>
+<p>这里涉及到两个比较有名，但是展现效果一般的刷新控件，这里为大家实现下拉刷新提供一些思路</p>
+</blockquote>
+<h3 id="1-3-1SVPullToRefresh">1.3.1SVPullToRefresh</h3>
+<p><a href="https://github.com/samvermette/SVPullToRefresh" target="_blank" rel="external">GitHub地址</a>,这个刷新控件将原本所需要做的操作都封装的内部，对外只要调用一个block就OK，清爽整洁，代码关联性也很强，不像delegate太累赘，当然适用场景不同，总有取舍。</p>
+<pre><code>[tableView addPullToRefreshWithActionHandler^{
+<span class="comment">//refresh操作</span>
+<span class="comment">//结束时调用stopAnimation</span>
+}postion:SVPullToRefreshPositionBottom];<span class="comment">//这里是指定刷新控件的位置</span>
+
+<span class="comment">//其他的属性设置也比较简单</span>
+<span class="comment">//接口简单的背后是作者的精心设计，非常值得我们学习</span>
+</code></pre><h4 id="1-3-2_SVPullToRefresh中Category为主，Associated_Objects为辅">1.3.2 SVPullToRefresh中Category为主，Associated Objects为辅</h4>
+<p>Category相信大家都十分熟悉，Associated Reference相对来说用到比较少，它是Objc 2.0 runtime的一大特性，你需要添加<objc runtime.h="">,对象可以设置set\get\remove AssociatedObjects ，它的最大用处就是允许开发者在Category中添加自定义属性，弥补了Category的一大弱点。就像一般属性一样，也可以设置属性类似于assigin、retain、copy等</objc></p>
+<ul>
+<li>scrollView的contentInset属性，根据scrollView的相关代理DidScroll，willDrag等来修改contentInset，这里自己还要设置当前页面的集中状态</li>
+</ul>
+<p><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">	typedef NS_ENUM(NSUInteger, SVPullToRefreshState) {</div><div class="line">	SVPullToRefreshStateStopped = 0,</div><div class="line">   SVPullToRefreshStateTriggered,</div><div class="line">   SVPullToRefreshStateLoading,</div><div class="line">   SVPullToRefreshStateAll = 10</div><div class="line">   };</div></pre></td></tr></table></figure><br>在用户没有拖动页面的时候，contentOffset.y = 0,当用户拖动页面的时候contentOffset.y = -44(数字与你的刷新动画相关)，当用户手松开这里应该是EndDrag，此时开始加载新数据，reloadData。</p>
+<ul>
+<li><p>利用KVO，对相关属性设置监听，包括前面提到的contentoffset,contentSize, frame,再调用layoutSubViews来调整页面中控件的位置</p>
+</li>
+<li><p>自定义这块还是相当复杂的，一方面要自己在drawRect自己画，标注一堆坐标值，一方面要重画程度很大的话必须重写扩展的内部代码</p>
+</li>
+</ul>
+<h3 id="1-3-2GifRefreshControl">1.3.2GifRefreshControl</h3>
+<ul>
+<li>这里介绍一种简单有效的方式，你就只需要一套图片，就可以做出相对酷炫的刷新效果，相比之前SVPull的开创先河，后续的Refresh控件很好继承了它的优点，对外暴露很少的接口，使用者调用起来相当简便，耦合度低，代码复杂度也低</li>
+</ul>
+<ul>
+<li>同样也是block的形式来执行刷新动画后的具体加载数据操作，调用了<objc runtime.h="">,拥有不同的状态布尔值，利用KVO监听contentOffset和state，在主方法内传入drawingImgs和loadingImgs  </objc></li>
+</ul>
+<ul>
+<li>不要忘了调用结束后要在dealloc中[scrollView didFinishPullToRefresh]</li>
+</ul>
+<h3 id="1-3-3刷新的新思路AAPullToRefresh">1.3.3刷新的新思路AAPullToRefresh</h3>
+<ul>
+<li>刷新不仅仅可以是上拉下拉，左右拉也是可以的</li>
+</ul>
+<p><img src="http://7te818.com1.z0.glb.clouddn.com/r-plus_AAPullToRefresh.png" alt="刷新图片"></p>
+<ul>
+<li>这里就是提供了一种新的思路，其实刷新的方式还有很多种，用户会被那种吸引呢，那就让设计师出图吧，到时候苦逼工程师就实现把</li>
+</ul>
+
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/03/11/iOS-Animation-初窥/">iOS Animation 初窥</a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/01/04/域名申请与绑定/">域名申请与绑定</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </div>
+  </div>
+
+
+
+    
+      <div class="comments" id="comments">
+        
+          <div class="ds-thread" data-thread-key="2015/02/01/iOS控件系列之刷新控件/"
+               data-title="iOS控件系列之刷新控件" data-url="http://www.dpsoxeon.com/2015/02/01/iOS控件系列之刷新控件/">
+          </div>
+        
+      </div>
+    
+  </div>
+
+
+        </div>
+
+        
+      </div>
+
+
+      
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview">
+        <div class="site-author motion-element">
+          <img class="site-author-image" src="http://7te818.com1.z0.glb.clouddn.com/images.jpeg" alt="DP Power" />
+          <p class="site-author-name">DP Power</p>
+        </div>
+        <p class="site-description motion-element">DP's blog | iOS | ObjC | Swift</p>
+        <div class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </div>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+              <a href="https://github.com/SoXeon" target="_blank">GitHub</a>
+            </span>
+            
+              <span class="links-of-author-item">
+              <a href="http://www.zhihu.com/people/zi-ji-27" target="_blank">ZhiHu</a>
+            </span>
+            
+              <span class="links-of-author-item">
+              <a href="http://www.weibo.com/2679315393/profile?rightmod=1&wvr=6&mod=personinfo" target="_blank">WeiBo</a>
+            </span>
+            
+          
+        </div>
+
+        
+        
+
+      </div>
+
+      
+        <div class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1iOS标准刷新控件_UIRefreshControl"><span class="nav-number">1.</span> <span class="nav-text">1.1iOS标准刷新控件 UIRefreshControl</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2眼花缭乱的第三方刷新控件"><span class="nav-number">2.</span> <span class="nav-text">1.2眼花缭乱的第三方刷新控件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3刷新控件深入分析"><span class="nav-number">3.</span> <span class="nav-text">1.3刷新控件深入分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1SVPullToRefresh"><span class="nav-number">3.1.</span> <span class="nav-text">1.3.1SVPullToRefresh</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-2_SVPullToRefresh中Category为主，Associated_Objects为辅"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.3.2 SVPullToRefresh中Category为主，Associated Objects为辅</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2GifRefreshControl"><span class="nav-number">3.2.</span> <span class="nav-text">1.3.2GifRefreshControl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3刷新的新思路AAPullToRefresh"><span class="nav-number">3.3.</span> <span class="nav-text">1.3.3刷新的新思路AAPullToRefresh</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </div>
+      
+
+    </div>
+  </div>
+
+
+    </div>
+
+    <div id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; &nbsp; 
+  2016
+  <span class="with-love">
+    <i class="icon-heart"></i>
+  </span>
+  <span class="author">DP Power</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </div>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.content img').each(function () {
+        var $image = $(this);
+        var $imageWrapLink = $image.parent('a');
+
+        if ($imageWrapLink.size() < 1) {
+          $imageWrapLink = $image.wrap('<a href="' + this.getAttribute('src') + '"></a>').parent('a');
+        }
+        $imageWrapLink.addClass('fancybox');
+      });
+    });
+    $('.fancybox').fancybox({
+      helpers: {
+        overlay: {
+          locked: false
+        }
+      }
+    });
+  </script>
+
+
+  <script type="text/javascript">
+  function hasMobileUA () {
+    var nav = window.navigator;
+    var ua = nav.userAgent;
+    var pa = /iPad|iPhone|Android|Opera Mini|BlackBerry|webOS|UCWEB|Blazer|PSP|IEMobile|Symbian/g;
+
+    return pa.test(ua);
+  }
+
+  function isDesktop () {
+    return screen.width > 991 && !hasMobileUA();
+  }
+
+  function isTablet () {
+    return screen.width < 992 && screen.width > 767 && hasMobileUA();
+  }
+
+  function isMobile () {
+    return screen.width < 767 && hasMobileUA();
+  }
+
+  function escapeSelector (selector) {
+    return selector.replace(/[!"$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&")
+  }
+</script>
+
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" id="motion.global">
+  $(document).ready(function () {
+    var body = $('body');
+    var isSidebarVisible = false;
+    var sidebarToggle = $('.sidebar-toggle');
+    var sidebarToggleLine1st = $('.sidebar-toggle-line-first')
+    var sidebarToggleLine2nd = $('.sidebar-toggle-line-middle');
+    var sidebarToggleLine3rd = $('.sidebar-toggle-line-last');
+    var sidebar = $('.sidebar');
+
+    var SIDEBAR_WIDTH = '320px';
+    var SIDEBAR_DISPLAY_DURATION = 300;
+
+    var sidebarToogleLineStatusInit = {width: '100%', opacity: 1, left: 0, rotateZ: 0, top: 0};
+
+    var sidebarToggleLine1stStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine1stStatusArrow = {width: '50%', rotateZ: '-45deg', top: '2px'};
+    var sidebarToogleLine1stStatusClose = {width: '100%', rotateZ: '-45deg', top: '5px'};
+
+    var sidebarToggleLine2ndStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine2ndStatusArrow = {width: '90%'};
+    var sidebarToogleLine2ndStatusClose = {opacity: 0};
+
+    var sidebarToggleLine3rdStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine3rdStatusArrow = {width: '50%', rotateZ: '45deg', top: '-2px'};
+    var sidebarToogleLine3rdStatusClose = {width: '100%', rotateZ: '45deg', top: '-5px'};
+
+    LogoAndMenuMotion();
+    sidebatToggleMotion();
+    postsListMotion();
+    backToTopMotion();
+
+
+    $(document)
+      .on('sidebar.isShowing', function () {
+        isDesktop() && body.velocity(
+          {paddingRight: SIDEBAR_WIDTH},
+          SIDEBAR_DISPLAY_DURATION
+        );
+        sidebarContentMotion();
+      })
+      .on('sidebar.isHiding', function () {});
+
+    function LogoAndMenuMotion() {
+      $.Velocity.RunSequence([
+        { e: $('.brand'), p: { opacity: 1 }, o: { duration: 100 } },
+        { e: $('.logo'), p: { opacity: 1, top: 0 }, o: { duration: 50} },
+        
+        { e: $('.site-title'), p: { opacity: 1, top: 0 }, o: { duration: 200 } }
+      ]);
+      $('.menu-item').velocity('transition.slideDownIn', {display: null});
+    }
+
+
+    function backToTopMotion () {
+      var b2top = $('.back-to-top');
+      b2top.on('click', function () {
+        body.velocity('scroll');
+      });
+    }
+
+    function sidebarShowMotion () {
+
+      sidebarToggleLine1st.velocity(sidebarToogleLine1stStatusClose);
+      sidebarToggleLine2nd.velocity(sidebarToogleLine2ndStatusClose);
+      sidebarToggleLine3rd.velocity(sidebarToogleLine3rdStatusClose);
+
+      sidebar.velocity({width: SIDEBAR_WIDTH}, {
+        display: 'block',
+        duration: SIDEBAR_DISPLAY_DURATION,
+        complete: function () {
+          sidebar.addClass('sidebar-active');
+          sidebar.trigger('sidebar.didShow');
+        }
+      });
+      sidebar.trigger('sidebar.isShowing');
+    }
+
+    function sidebarHideMotion () {
+      isDesktop() && body.velocity({paddingRight: 0});
+      sidebar.velocity('reverse');
+
+      sidebarToggleLine1st.velocity(sidebarToggleLine1stStatusInit);
+      sidebarToggleLine2nd.velocity(sidebarToggleLine2ndStatusInit);
+      sidebarToggleLine3rd.velocity(sidebarToggleLine3rdStatusInit);
+
+      sidebar.removeClass('sidebar-active');
+      sidebar.trigger('sidebar.isHiding');
+    };
+
+    function sidebarContentMotion () {
+      $('.sidebar .motion-element').velocity(
+        'transition.slideRightIn',
+        {stagger: 50, drag: true}
+      );
+    }
+
+    function postsListMotion () {
+      var postMotionOptions = window.postMotionOptions || {stagger: 300, drag: true};
+      $('.post').velocity('transition.slideDownIn', postMotionOptions);
+    }
+
+    function sidebatToggleMotion () {
+      sidebarToggle.on('click', function () {
+        isSidebarVisible ? sidebarHideMotion() : sidebarShowMotion();
+        isSidebarVisible = !isSidebarVisible;
+      });
+
+      sidebarToggle.hover(function () {
+        if (isSidebarVisible) {return}
+        sidebarToggleLine1st.velocity('stop').velocity(sidebarToggleLine1stStatusArrow);
+        sidebarToggleLine2nd.velocity('stop').velocity(sidebarToggleLine2ndStatusArrow);
+        sidebarToggleLine3rd.velocity('stop').velocity(sidebarToggleLine3rdStatusArrow);
+      }, function () {
+        if (isSidebarVisible) {return}
+        sidebarToggleLine1st.velocity('stop').velocity(sidebarToggleLine1stStatusInit);
+        sidebarToggleLine2nd.velocity('stop').velocity(sidebarToggleLine2ndStatusInit);
+        sidebarToggleLine3rd.velocity('stop').velocity(sidebarToggleLine3rdStatusInit);
+      });
+    }
+  });
+
+</script>
+
+
+
+
+
+  
+  
+<script type="text/javascript" id="bootstrap.scrollspy.custom">
+  /* ========================================================================
+  * Bootstrap: scrollspy.js v3.3.2
+  * http://getbootstrap.com/javascript/#scrollspy
+  * ========================================================================
+  * Copyright 2011-2015 Twitter, Inc.
+  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+  * ======================================================================== */
+
+  /**
+   * Custom by iissnan
+   *
+   * - Add a `clear.bs.scrollspy` event.
+   * - Esacpe targets selector.
+   */
+
+
+  +function ($) {
+    'use strict';
+
+    // SCROLLSPY CLASS DEFINITION
+    // ==========================
+
+    function ScrollSpy(element, options) {
+      this.$body          = $(document.body)
+      this.$scrollElement = $(element).is(document.body) ? $(window) : $(element)
+      this.options        = $.extend({}, ScrollSpy.DEFAULTS, options)
+      this.selector       = (this.options.target || '') + ' .nav li > a'
+      this.offsets        = []
+      this.targets        = []
+      this.activeTarget   = null
+      this.scrollHeight   = 0
+
+      this.$scrollElement.on('scroll.bs.scrollspy', $.proxy(this.process, this))
+      this.refresh()
+      this.process()
+    }
+
+    ScrollSpy.VERSION  = '3.3.2'
+
+    ScrollSpy.DEFAULTS = {
+      offset: 10
+    }
+
+    ScrollSpy.prototype.getScrollHeight = function () {
+      return this.$scrollElement[0].scrollHeight || Math.max(this.$body[0].scrollHeight, document.documentElement.scrollHeight)
+    }
+
+    ScrollSpy.prototype.refresh = function () {
+      var that          = this
+      var offsetMethod  = 'offset'
+      var offsetBase    = 0
+
+      this.offsets      = []
+      this.targets      = []
+      this.scrollHeight = this.getScrollHeight()
+
+      if (!$.isWindow(this.$scrollElement[0])) {
+        offsetMethod = 'position'
+        offsetBase   = this.$scrollElement.scrollTop()
+      }
+
+      this.$body
+        .find(this.selector)
+        .map(function () {
+          var $el   = $(this)
+          var href  = $el.data('target') || $el.attr('href')
+          var $href = /^#./.test(href) && $(escapeSelector(href)) // Need to escape selector.
+
+          return ($href
+            && $href.length
+            && $href.is(':visible')
+            && [[$href[offsetMethod]().top + offsetBase, href]]) || null
+        })
+        .sort(function (a, b) { return a[0] - b[0] })
+        .each(function () {
+          that.offsets.push(this[0])
+          that.targets.push(this[1])
+        })
+
+
+    }
+
+    ScrollSpy.prototype.process = function () {
+      var scrollTop    = this.$scrollElement.scrollTop() + this.options.offset
+      var scrollHeight = this.getScrollHeight()
+      var maxScroll    = this.options.offset + scrollHeight - this.$scrollElement.height()
+      var offsets      = this.offsets
+      var targets      = this.targets
+      var activeTarget = this.activeTarget
+      var i
+
+      if (this.scrollHeight != scrollHeight) {
+        this.refresh()
+      }
+
+      if (scrollTop >= maxScroll) {
+        return activeTarget != (i = targets[targets.length - 1]) && this.activate(i)
+      }
+
+      if (activeTarget && scrollTop < offsets[0]) {
+        $(this.selector).trigger('clear.bs.scrollspy')  // Add a custom event.
+        this.activeTarget = null
+        return this.clear()
+      }
+
+      for (i = offsets.length; i--;) {
+        activeTarget != targets[i]
+          && scrollTop >= offsets[i]
+          && (!offsets[i + 1] || scrollTop <= offsets[i + 1])
+          && this.activate(targets[i])
+      }
+    }
+
+    ScrollSpy.prototype.activate = function (target) {
+      this.activeTarget = target
+
+      this.clear()
+
+      var selector = this.selector +
+        '[data-target="' + target + '"],' +
+        this.selector + '[href="' + target + '"]'
+
+      var active = $(selector)
+        .parents('li')
+        .addClass('active')
+
+      if (active.parent('.dropdown-menu').length) {
+        active = active
+          .closest('li.dropdown')
+          .addClass('active')
+      }
+
+      active.trigger('activate.bs.scrollspy')
+    }
+
+    ScrollSpy.prototype.clear = function () {
+      $(this.selector)
+        .parentsUntil(this.options.target, '.active')
+        .removeClass('active')
+    }
+
+
+    // SCROLLSPY PLUGIN DEFINITION
+    // ===========================
+
+    function Plugin(option) {
+      return this.each(function () {
+        var $this   = $(this)
+        var data    = $this.data('bs.scrollspy')
+        var options = typeof option == 'object' && option
+
+        if (!data) $this.data('bs.scrollspy', (data = new ScrollSpy(this, options)))
+        if (typeof option == 'string') data[option]()
+      })
+    }
+
+    var old = $.fn.scrollspy
+
+    $.fn.scrollspy             = Plugin
+    $.fn.scrollspy.Constructor = ScrollSpy
+
+
+    // SCROLLSPY NO CONFLICT
+    // =====================
+
+    $.fn.scrollspy.noConflict = function () {
+      $.fn.scrollspy = old
+      return this
+    }
+
+
+    // SCROLLSPY DATA-API
+    // ==================
+
+    $(window).on('load.bs.scrollspy.data-api', function () {
+      $('[data-spy="scroll"]').each(function () {
+        var $spy = $(this)
+        Plugin.call($spy, $spy.data())
+      })
+    })
+
+  }(jQuery);
+</script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var $sidebarInner = $('.sidebar-inner');
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.didShow', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+          var self = this;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      $(indicator).velocity('stop').velocity({
+        opacity: action === 'show' ? 0.4 : 0
+      }, { duration: 100 });
+    }
+
+  });
+</script>
+
+
+  <script type="text/javascript" id="sidebar.nav">
+    $(document).ready(function () {
+      var html = $('html');
+
+      $('.sidebar-nav li').on('click', function () {
+        var item = $(this);
+        var activeTabClassName = 'sidebar-nav-active';
+        var activePanelClassName = 'sidebar-panel-active';
+        if (item.hasClass(activeTabClassName)) {
+          return;
+        }
+
+        var currentTarget = $('.' + activePanelClassName);
+        var target = $('.' + item.data('target'));
+
+        currentTarget.velocity('transition.slideUpOut', 200, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', 200)
+            .addClass(activePanelClassName);
+        });
+
+        item.siblings().removeClass(activeTabClassName);
+        item.addClass(activeTabClassName);
+      });
+
+      $('.post-toc a').on('click', function (e) {
+        e.preventDefault();
+        var offset = $(escapeSelector(this.getAttribute('href'))).offset().top;
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        });
+      });
+
+      // Expand sidebar on post detail page by default, when post has a toc.
+      var $tocContent = $('.post-toc-content');
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0 && isDesktop()) {
+        setTimeout(function () {
+          $('.sidebar-toggle').trigger('click');
+        }, 800);
+      }
+    });
+  </script>
+
+
+
+
+  
+
+  
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"dpsoxeoncom"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+
+
+  
+  
+</body>
+</html>

@@ -1,0 +1,941 @@
+<!doctype html>
+<html class="theme-next use-motion ">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.2"/>
+
+
+    <meta name="description" content="DP's blog | iOS | ObjC | Swift" />
+
+
+
+  <meta name="keywords" content="Hexo,next" />
+
+
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.2" />
+
+
+
+
+  <title> AsyncDisplayKit随想 // So Xeon's Blog </title>
+</head>
+
+<body>
+<!--[if lte IE 8]> <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'> <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode"><img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820" alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari." style='margin-left:auto;margin-right:auto;display: block;'/></a></div> <![endif]-->
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <div id="header" class="header">
+      <div class="header-inner">
+        <h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand">
+      <span class="logo">
+        <i class="icon-logo"></i>
+      </span>
+      <span class="site-title">So Xeon's Blog</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+
+  <ul id="menu" class="menu">
+     
+    
+      
+      <li class="menu-item menu-item-home">
+        <a href="/">
+          <i class="menu-item-icon icon-home"></i> <br />
+          Home
+        </a>
+      </li>
+    
+      
+      <li class="menu-item menu-item-archives">
+        <a href="/archives">
+          <i class="menu-item-icon icon-archives"></i> <br />
+          Archives
+        </a>
+      </li>
+    
+      
+      <li class="menu-item menu-item-tags">
+        <a href="/tags">
+          <i class="menu-item-icon icon-tags"></i> <br />
+          Tags
+        </a>
+      </li>
+    
+  </ul>
+
+
+      </div>
+    </div>
+
+    <div id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content">
+          
+
+  <div id="posts" class="posts-expand">
+    
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
+              AsyncDisplayKit随想
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          Posted on 2015-08-09
+        </span>
+
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/08/10/AsyncDisplayKit随想/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/10/AsyncDisplayKit随想/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <p>App的UIView抽象，AsyncDisplayKit能为开发者提供一种App图形性能优化的新思路。</p>
+<a id="more"></a>
+
+<hr>
+<h3 id="1-引子">1.引子</h3>
+<p>&emsp;&emsp;Facebook的Paper团队想必大家都耳熟能详，丰富的交互动画以及多种手势操作的运用，让Paper应用独树一帜，那些眼前一亮的动画是由底层的Pop动画库提供支持的，同时为了达到复杂动画下应用流畅，必须做好深度优化，然而系统提供的UIView没有办法达到希望的效果，AsyncDisplayKit适时的推出让App的流畅度和响应性都可以达到一个新的高度，也让Paper这类应用的完整用户体验在不同硬件级别的苹果设备上得到较好的还原。下文中AsyncDisplayKit由ASDK代替。</p>
+<p><strong>ASDK主要运用场景：</strong></p>
+<ol>
+<li><p>复杂多元素视图界面。</p>
+</li>
+<li><p>低性能硬件设备。</p>
+</li>
+</ol>
+<h3 id="2-ASDK使用入门">2.ASDK使用入门</h3>
+<p><a href="http://asyncdisplaykit.org/guide/" target="_blank" rel="external">官方文档</a><br><a href="http://www.raywenderlich.com/107310/asyncdisplaykit-tutorial-node-hierarchies" target="_blank" rel="external">Raywenderlich AsyncDisplaykit Tutorial 1</a>这篇深入分析了ASDK强大之处！<br><a href="http://www.raywenderlich.com/86365/AsyncDisplayKit-tutorial-achieving-60-fps-scrolling" target="_blank" rel="external">Raywenderlich AsyncDisplayKit Tutorial 2</a></p>
+<ul>
+<li>ASDK的基本单元是Node，Node是UIView以及对应Layer的抽象层，与UIView的最大区别在于，Node是线程安全的，并可以设置对应的Node内部层次后在后台线程中运行，而UIView只能将大量的耗时操作全都放在主线程上进行。</li>
+<li>ASDisplayNode对view和Layer拥有很好的抽象，你可以很方便的访问CALayer属性，下图中展示了主要的ASDK与UIView中一一映射。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>AsyncDisplayKit</th>
+<th style="text-align:center">UIView</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASDisplayNode</td>
+<td style="text-align:center">UIView subclass</td>
+</tr>
+<tr>
+<td>ASControlNode</td>
+<td style="text-align:center">UIControl</td>
+</tr>
+<tr>
+<td>ASImageNode</td>
+<td style="text-align:center">UIImageView</td>
+</tr>
+<tr>
+<td>ASTextNode(TextKit)</td>
+<td style="text-align:center">UITextView</td>
+</tr>
+<tr>
+<td>ASTableView</td>
+<td style="text-align:center">UITableView</td>
+</tr>
+<tr>
+<td>ASCollectionView</td>
+<td style="text-align:center">UICollectionView</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>最新的ASDK中开始自己实现了一套AutoLayout，有别于Apple官方的AutoLayout，还是需要适应，不过注释写的比较清楚，可以接受，但无形中增加了学习成本以及日后的维护成本。</li>
+<li>在控制View的frame的时候，ASDisplayNode采用了另外一套形式，分别在以下两个方法中。</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// perform expensive sizing operations on a background thread</span></div><div class="line">- (<span class="built_in">CGSize</span>)calculateSizeThatFits:(<span class="built_in">CGSize</span>)constrainedSize</div><div class="line">{</div><div class="line">}</div><div class="line"></div><div class="line"><span class="comment">// main-thread layout</span></div><div class="line">- (<span class="keyword">void</span>)layout</div><div class="line">{</div><div class="line">}</div></pre></td></tr></table></figure>
+
+<h3 id="3-ASDK原理浅析">3.ASDK原理浅析</h3>
+<p>&emsp;&emsp;AsyncDisplayKit 的Node所处的位置可以让其在后台线程中有进行高消耗运算，最后将尽量小损耗的运算放在主线程上操作。<br><img src="http://7te818.com1.z0.glb.clouddn.com/node-view-layer.png" alt=""><br><strong><a href="http://asyncdisplaykit.org/guide/5/" target="_blank" rel="external">Node Architecture</a>(以下为部分翻译)</strong><br>&emsp;&emsp;创建一个Node并不会创建它的view-layer部分，这是能够以很低成本的创建nodes并且在后台线程中的原因，当你要使用一个Node的UIView和CALayer属性时，你可以通过一个代理对象如_ASPendingState,这样可以预先匹配了UIView和CALayer的默认值。</p>
+<p>&emsp;&emsp;Nodes由ASDisplayLayer和ASDisplayView构成，这些都是轻量级的创建，并添加到其他各自的层次结构，并提供集成点，允许节点充当全面的views或layers。</p>
+<p>&emsp;&emsp;当核心动画的要求要_ASDisplayLayer绘制自己，请求会转发到其节点。除非异步显示已被禁用，实际绘制调用不会立即发生或在主线程中发生。相反，一个显示Block将被添加到一个后台队列。这些block并行执行，但可以启用ASDISPLAYNODE_DELAY_DISPLAY在ASDisplayNode （ AsyncDisplay ），以连载的渲染系统进行调试。</p>
+<p>&emsp;&emsp;在ASTableView方面Cell重用很关键，但是ASTableView内部做的很好，有效的做了资源利用，就是单个Cell内部Node释放与重用问题，特别是Layer树中Layer的释放问题。资源的释放与重用是性能提升的一种有效途径。</p>
+<p>&emsp;&emsp;不能在ASNode内部直接创建一个UIView实例，这样会直接Crash。</p>
+<p>&emsp;&emsp;容器Node内部的层级结构，通过设置node.shouldRasterizeDescendants = true可以实现，那些子Node可以通过containerNode.addSubnode(suclassNode),添加Node的顺序很关键，最先添加的Node会被后续的阻挡。</p>
+<p>&emsp;&emsp;除了绘制操作会损耗性能意外，在复杂屏幕上布局计算也非常昂贵,ASDK可以做到布局和渲染都不在主线程上，太赞了。</p>
+<p>&emsp;&emsp;然并卵，对于如何明确使用ASDK，首先你要对标准UIKit的性能瓶颈有所足够了解。</p>
+<h3 id="4-ASDK的一些问题">4.ASDK的一些问题</h3>
+<p>1.autoLayout支持<br>&emsp;&emsp;最初ASDK没有支持AutoLayout，然而在后续版本中提供了对应的支持。下面展示了对应的两种不同形式的frame的设置形式。</p>
+<ul>
+<li>no-autoLayout:</li>
+</ul>
+<p><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">CGSize</span>)calculateSizeThatFits:(<span class="built_in">CGSize</span>)constrainedSize</div><div class="line">{</div><div class="line">  <span class="built_in">CGSize</span> imageSize = CGSizeMake(kImageSize, kImageSize);</div><div class="line">  <span class="built_in">CGSize</span> textSize = [_textNode measure:CGSizeMake(constrainedSize<span class="variable">.width</span> - kImageSize - <span class="number">2</span> * kOuterPadding - kInnerPadding,</div><div class="line">                                                  constrainedSize<span class="variable">.height</span>)];</div><div class="line"></div><div class="line">  <span class="comment">// ensure there's room for the text</span></div><div class="line">  <span class="built_in">CGFloat</span> requiredHeight = MAX(textSize<span class="variable">.height</span>, imageSize<span class="variable">.height</span>);</div><div class="line">  <span class="keyword">return</span> CGSizeMake(constrainedSize<span class="variable">.width</span>, requiredHeight + <span class="number">2</span> * kOuterPadding);</div><div class="line">}</div></pre></td></tr></table></figure> </p>
+<ul>
+<li>ASDK的AutoLayout抽象：</li>
+</ul>
+<p><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">- (ASLayoutSpec *)layoutSpecThatFits:(ASSizeRange)constrainedSize</div><div class="line">{</div><div class="line">  ASRatioLayoutSpec *imagePlaceholder = [ASRatioLayoutSpec newWithRatio:<span class="number">1.0</span> child:_imageNode]<span class="comment">;</span></div><div class="line">  imagePlaceholder<span class="preprocessor">.flexBasis</span> = ASRelativeDimensionMakeWithPoints(kImageSize)<span class="comment">;</span></div><div class="line"></div><div class="line">  _textNode<span class="preprocessor">.flexShrink</span> = YES<span class="comment">;</span></div><div class="line"></div><div class="line">  return</div><div class="line">  [ASInsetLayoutSpec</div><div class="line">   newWithInsets:UIEdgeInsetsMake(kOuterPadding, kOuterPadding, kOuterPadding, kOuterPadding)</div><div class="line">   child:</div><div class="line">   [ASStackLayoutSpec</div><div class="line">    newWithStyle:{</div><div class="line">      <span class="preprocessor">.direction</span> = ASStackLayoutDirectionVertical,</div><div class="line">      <span class="preprocessor">.spacing</span> = kInnerPadding</div><div class="line">    }</div><div class="line">    children:@[imagePlaceholder, _textNode]]]<span class="comment">;</span></div><div class="line">}</div></pre></td></tr></table></figure><br>2.<a href="https://github.com/facebook/AsyncDisplayKit/issues/49" target="_blank" rel="external">iOS6 支持问题</a>:<br>ASTextNode中运用到了一些TextKit的特性，而这些特性CoreText的实现效果并不好，所以Paper团队放弃了TextNode这块对iOS6的支持，其他的AS*还是可以在iOS6环境下运行的，这里要吐槽一下，Facebook从去年底起选择不在支持iOS6，选择性放弃了小于5%的iOS6用户，同时天猫iPadApp在适配多iOS版本中还是遇到了很多坑，适配Reactive-Native中时iOS6中的JavascriptCore.framework产生风险，总之坑很多。</p>
+<h3 id="5-iOS性能优化展望">5.iOS性能优化展望</h3>
+<p>iOS图形加速优化，首先需要找到性能薄弱点，通过Instrument的Allocations,Time Profiler,Leaks配合可以观察出运行的App具体性能薄弱点在哪，是CPU损耗过多还是GPU的损耗占更多，这样才能得出接下来优化方向，否则就南辕北辙了。<br>下面是三个具体优化的链接：</p>
+<ol>
+<li><a href="http://www.cocoachina.com/ios/20150729/12795.html" target="_blank" rel="external">TableView的优化10Tips</a></li>
+<li><a href="http://www.hrchen.com/2013/05/performance-with-instruments/" target="_blank" rel="external">iOS App性能优化</a></li>
+<li><a href="http://www.raywenderlich.com/31166/25-ios-app-performance-tips-tricks" target="_blank" rel="external">iOS app performance tips tricks</a></li>
+</ol>
+
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/12/04/iOS9-Search-link-anythings/">iOS9 Search link anythings</a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/07/24/LinkMap分析初窥/">LinkMap分析初窥</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </div>
+  </div>
+
+
+
+    
+      <div class="comments" id="comments">
+        
+          <div class="ds-thread" data-thread-key="2015/08/10/AsyncDisplayKit随想/"
+               data-title="AsyncDisplayKit随想" data-url="http://www.dpsoxeon.com/2015/08/10/AsyncDisplayKit随想/">
+          </div>
+        
+      </div>
+    
+  </div>
+
+
+        </div>
+
+        
+      </div>
+
+
+      
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table Of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview">
+        <div class="site-author motion-element">
+          <img class="site-author-image" src="http://7te818.com1.z0.glb.clouddn.com/images.jpeg" alt="DP Power" />
+          <p class="site-author-name">DP Power</p>
+        </div>
+        <p class="site-description motion-element">DP's blog | iOS | ObjC | Swift</p>
+        <div class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-name">posts</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            
+              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-name">categories</span>
+              
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-name">tags</span>
+              </a>
+          </div>
+
+        </div>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+              <a href="https://github.com/SoXeon" target="_blank">GitHub</a>
+            </span>
+            
+              <span class="links-of-author-item">
+              <a href="http://www.zhihu.com/people/zi-ji-27" target="_blank">ZhiHu</a>
+            </span>
+            
+              <span class="links-of-author-item">
+              <a href="http://www.weibo.com/2679315393/profile?rightmod=1&wvr=6&mod=personinfo" target="_blank">WeiBo</a>
+            </span>
+            
+          
+        </div>
+
+        
+        
+
+      </div>
+
+      
+        <div class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-引子"><span class="nav-number">1.</span> <span class="nav-text">1.引子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-ASDK使用入门"><span class="nav-number">2.</span> <span class="nav-text">2.ASDK使用入门</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-ASDK原理浅析"><span class="nav-number">3.</span> <span class="nav-text">3.ASDK原理浅析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-ASDK的一些问题"><span class="nav-number">4.</span> <span class="nav-text">4.ASDK的一些问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-iOS性能优化展望"><span class="nav-number">5.</span> <span class="nav-text">5.iOS性能优化展望</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </div>
+      
+
+    </div>
+  </div>
+
+
+    </div>
+
+    <div id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">
+  
+  &copy; &nbsp; 
+  2016
+  <span class="with-love">
+    <i class="icon-heart"></i>
+  </span>
+  <span class="author">DP Power</span>
+</div>
+
+<div class="powered-by">
+  Powered by <a class="theme-link" href="http://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+
+      </div>
+    </div>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.content img').each(function () {
+        var $image = $(this);
+        var $imageWrapLink = $image.parent('a');
+
+        if ($imageWrapLink.size() < 1) {
+          $imageWrapLink = $image.wrap('<a href="' + this.getAttribute('src') + '"></a>').parent('a');
+        }
+        $imageWrapLink.addClass('fancybox');
+      });
+    });
+    $('.fancybox').fancybox({
+      helpers: {
+        overlay: {
+          locked: false
+        }
+      }
+    });
+  </script>
+
+
+  <script type="text/javascript">
+  function hasMobileUA () {
+    var nav = window.navigator;
+    var ua = nav.userAgent;
+    var pa = /iPad|iPhone|Android|Opera Mini|BlackBerry|webOS|UCWEB|Blazer|PSP|IEMobile|Symbian/g;
+
+    return pa.test(ua);
+  }
+
+  function isDesktop () {
+    return screen.width > 991 && !hasMobileUA();
+  }
+
+  function isTablet () {
+    return screen.width < 992 && screen.width > 767 && hasMobileUA();
+  }
+
+  function isMobile () {
+    return screen.width < 767 && hasMobileUA();
+  }
+
+  function escapeSelector (selector) {
+    return selector.replace(/[!"$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&")
+  }
+</script>
+
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" id="motion.global">
+  $(document).ready(function () {
+    var body = $('body');
+    var isSidebarVisible = false;
+    var sidebarToggle = $('.sidebar-toggle');
+    var sidebarToggleLine1st = $('.sidebar-toggle-line-first')
+    var sidebarToggleLine2nd = $('.sidebar-toggle-line-middle');
+    var sidebarToggleLine3rd = $('.sidebar-toggle-line-last');
+    var sidebar = $('.sidebar');
+
+    var SIDEBAR_WIDTH = '320px';
+    var SIDEBAR_DISPLAY_DURATION = 300;
+
+    var sidebarToogleLineStatusInit = {width: '100%', opacity: 1, left: 0, rotateZ: 0, top: 0};
+
+    var sidebarToggleLine1stStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine1stStatusArrow = {width: '50%', rotateZ: '-45deg', top: '2px'};
+    var sidebarToogleLine1stStatusClose = {width: '100%', rotateZ: '-45deg', top: '5px'};
+
+    var sidebarToggleLine2ndStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine2ndStatusArrow = {width: '90%'};
+    var sidebarToogleLine2ndStatusClose = {opacity: 0};
+
+    var sidebarToggleLine3rdStatusInit = sidebarToogleLineStatusInit;
+    var sidebarToggleLine3rdStatusArrow = {width: '50%', rotateZ: '45deg', top: '-2px'};
+    var sidebarToogleLine3rdStatusClose = {width: '100%', rotateZ: '45deg', top: '-5px'};
+
+    LogoAndMenuMotion();
+    sidebatToggleMotion();
+    postsListMotion();
+    backToTopMotion();
+
+
+    $(document)
+      .on('sidebar.isShowing', function () {
+        isDesktop() && body.velocity(
+          {paddingRight: SIDEBAR_WIDTH},
+          SIDEBAR_DISPLAY_DURATION
+        );
+        sidebarContentMotion();
+      })
+      .on('sidebar.isHiding', function () {});
+
+    function LogoAndMenuMotion() {
+      $.Velocity.RunSequence([
+        { e: $('.brand'), p: { opacity: 1 }, o: { duration: 100 } },
+        { e: $('.logo'), p: { opacity: 1, top: 0 }, o: { duration: 50} },
+        
+        { e: $('.site-title'), p: { opacity: 1, top: 0 }, o: { duration: 200 } }
+      ]);
+      $('.menu-item').velocity('transition.slideDownIn', {display: null});
+    }
+
+
+    function backToTopMotion () {
+      var b2top = $('.back-to-top');
+      b2top.on('click', function () {
+        body.velocity('scroll');
+      });
+    }
+
+    function sidebarShowMotion () {
+
+      sidebarToggleLine1st.velocity(sidebarToogleLine1stStatusClose);
+      sidebarToggleLine2nd.velocity(sidebarToogleLine2ndStatusClose);
+      sidebarToggleLine3rd.velocity(sidebarToogleLine3rdStatusClose);
+
+      sidebar.velocity({width: SIDEBAR_WIDTH}, {
+        display: 'block',
+        duration: SIDEBAR_DISPLAY_DURATION,
+        complete: function () {
+          sidebar.addClass('sidebar-active');
+          sidebar.trigger('sidebar.didShow');
+        }
+      });
+      sidebar.trigger('sidebar.isShowing');
+    }
+
+    function sidebarHideMotion () {
+      isDesktop() && body.velocity({paddingRight: 0});
+      sidebar.velocity('reverse');
+
+      sidebarToggleLine1st.velocity(sidebarToggleLine1stStatusInit);
+      sidebarToggleLine2nd.velocity(sidebarToggleLine2ndStatusInit);
+      sidebarToggleLine3rd.velocity(sidebarToggleLine3rdStatusInit);
+
+      sidebar.removeClass('sidebar-active');
+      sidebar.trigger('sidebar.isHiding');
+    };
+
+    function sidebarContentMotion () {
+      $('.sidebar .motion-element').velocity(
+        'transition.slideRightIn',
+        {stagger: 50, drag: true}
+      );
+    }
+
+    function postsListMotion () {
+      var postMotionOptions = window.postMotionOptions || {stagger: 300, drag: true};
+      $('.post').velocity('transition.slideDownIn', postMotionOptions);
+    }
+
+    function sidebatToggleMotion () {
+      sidebarToggle.on('click', function () {
+        isSidebarVisible ? sidebarHideMotion() : sidebarShowMotion();
+        isSidebarVisible = !isSidebarVisible;
+      });
+
+      sidebarToggle.hover(function () {
+        if (isSidebarVisible) {return}
+        sidebarToggleLine1st.velocity('stop').velocity(sidebarToggleLine1stStatusArrow);
+        sidebarToggleLine2nd.velocity('stop').velocity(sidebarToggleLine2ndStatusArrow);
+        sidebarToggleLine3rd.velocity('stop').velocity(sidebarToggleLine3rdStatusArrow);
+      }, function () {
+        if (isSidebarVisible) {return}
+        sidebarToggleLine1st.velocity('stop').velocity(sidebarToggleLine1stStatusInit);
+        sidebarToggleLine2nd.velocity('stop').velocity(sidebarToggleLine2ndStatusInit);
+        sidebarToggleLine3rd.velocity('stop').velocity(sidebarToggleLine3rdStatusInit);
+      });
+    }
+  });
+
+</script>
+
+
+
+
+
+  
+  
+<script type="text/javascript" id="bootstrap.scrollspy.custom">
+  /* ========================================================================
+  * Bootstrap: scrollspy.js v3.3.2
+  * http://getbootstrap.com/javascript/#scrollspy
+  * ========================================================================
+  * Copyright 2011-2015 Twitter, Inc.
+  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+  * ======================================================================== */
+
+  /**
+   * Custom by iissnan
+   *
+   * - Add a `clear.bs.scrollspy` event.
+   * - Esacpe targets selector.
+   */
+
+
+  +function ($) {
+    'use strict';
+
+    // SCROLLSPY CLASS DEFINITION
+    // ==========================
+
+    function ScrollSpy(element, options) {
+      this.$body          = $(document.body)
+      this.$scrollElement = $(element).is(document.body) ? $(window) : $(element)
+      this.options        = $.extend({}, ScrollSpy.DEFAULTS, options)
+      this.selector       = (this.options.target || '') + ' .nav li > a'
+      this.offsets        = []
+      this.targets        = []
+      this.activeTarget   = null
+      this.scrollHeight   = 0
+
+      this.$scrollElement.on('scroll.bs.scrollspy', $.proxy(this.process, this))
+      this.refresh()
+      this.process()
+    }
+
+    ScrollSpy.VERSION  = '3.3.2'
+
+    ScrollSpy.DEFAULTS = {
+      offset: 10
+    }
+
+    ScrollSpy.prototype.getScrollHeight = function () {
+      return this.$scrollElement[0].scrollHeight || Math.max(this.$body[0].scrollHeight, document.documentElement.scrollHeight)
+    }
+
+    ScrollSpy.prototype.refresh = function () {
+      var that          = this
+      var offsetMethod  = 'offset'
+      var offsetBase    = 0
+
+      this.offsets      = []
+      this.targets      = []
+      this.scrollHeight = this.getScrollHeight()
+
+      if (!$.isWindow(this.$scrollElement[0])) {
+        offsetMethod = 'position'
+        offsetBase   = this.$scrollElement.scrollTop()
+      }
+
+      this.$body
+        .find(this.selector)
+        .map(function () {
+          var $el   = $(this)
+          var href  = $el.data('target') || $el.attr('href')
+          var $href = /^#./.test(href) && $(escapeSelector(href)) // Need to escape selector.
+
+          return ($href
+            && $href.length
+            && $href.is(':visible')
+            && [[$href[offsetMethod]().top + offsetBase, href]]) || null
+        })
+        .sort(function (a, b) { return a[0] - b[0] })
+        .each(function () {
+          that.offsets.push(this[0])
+          that.targets.push(this[1])
+        })
+
+
+    }
+
+    ScrollSpy.prototype.process = function () {
+      var scrollTop    = this.$scrollElement.scrollTop() + this.options.offset
+      var scrollHeight = this.getScrollHeight()
+      var maxScroll    = this.options.offset + scrollHeight - this.$scrollElement.height()
+      var offsets      = this.offsets
+      var targets      = this.targets
+      var activeTarget = this.activeTarget
+      var i
+
+      if (this.scrollHeight != scrollHeight) {
+        this.refresh()
+      }
+
+      if (scrollTop >= maxScroll) {
+        return activeTarget != (i = targets[targets.length - 1]) && this.activate(i)
+      }
+
+      if (activeTarget && scrollTop < offsets[0]) {
+        $(this.selector).trigger('clear.bs.scrollspy')  // Add a custom event.
+        this.activeTarget = null
+        return this.clear()
+      }
+
+      for (i = offsets.length; i--;) {
+        activeTarget != targets[i]
+          && scrollTop >= offsets[i]
+          && (!offsets[i + 1] || scrollTop <= offsets[i + 1])
+          && this.activate(targets[i])
+      }
+    }
+
+    ScrollSpy.prototype.activate = function (target) {
+      this.activeTarget = target
+
+      this.clear()
+
+      var selector = this.selector +
+        '[data-target="' + target + '"],' +
+        this.selector + '[href="' + target + '"]'
+
+      var active = $(selector)
+        .parents('li')
+        .addClass('active')
+
+      if (active.parent('.dropdown-menu').length) {
+        active = active
+          .closest('li.dropdown')
+          .addClass('active')
+      }
+
+      active.trigger('activate.bs.scrollspy')
+    }
+
+    ScrollSpy.prototype.clear = function () {
+      $(this.selector)
+        .parentsUntil(this.options.target, '.active')
+        .removeClass('active')
+    }
+
+
+    // SCROLLSPY PLUGIN DEFINITION
+    // ===========================
+
+    function Plugin(option) {
+      return this.each(function () {
+        var $this   = $(this)
+        var data    = $this.data('bs.scrollspy')
+        var options = typeof option == 'object' && option
+
+        if (!data) $this.data('bs.scrollspy', (data = new ScrollSpy(this, options)))
+        if (typeof option == 'string') data[option]()
+      })
+    }
+
+    var old = $.fn.scrollspy
+
+    $.fn.scrollspy             = Plugin
+    $.fn.scrollspy.Constructor = ScrollSpy
+
+
+    // SCROLLSPY NO CONFLICT
+    // =====================
+
+    $.fn.scrollspy.noConflict = function () {
+      $.fn.scrollspy = old
+      return this
+    }
+
+
+    // SCROLLSPY DATA-API
+    // ==================
+
+    $(window).on('load.bs.scrollspy.data-api', function () {
+      $('[data-spy="scroll"]').each(function () {
+        var $spy = $(this)
+        Plugin.call($spy, $spy.data())
+      })
+    })
+
+  }(jQuery);
+</script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var $sidebarInner = $('.sidebar-inner');
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.didShow', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+          var self = this;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      $(indicator).velocity('stop').velocity({
+        opacity: action === 'show' ? 0.4 : 0
+      }, { duration: 100 });
+    }
+
+  });
+</script>
+
+
+  <script type="text/javascript" id="sidebar.nav">
+    $(document).ready(function () {
+      var html = $('html');
+
+      $('.sidebar-nav li').on('click', function () {
+        var item = $(this);
+        var activeTabClassName = 'sidebar-nav-active';
+        var activePanelClassName = 'sidebar-panel-active';
+        if (item.hasClass(activeTabClassName)) {
+          return;
+        }
+
+        var currentTarget = $('.' + activePanelClassName);
+        var target = $('.' + item.data('target'));
+
+        currentTarget.velocity('transition.slideUpOut', 200, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', 200)
+            .addClass(activePanelClassName);
+        });
+
+        item.siblings().removeClass(activeTabClassName);
+        item.addClass(activeTabClassName);
+      });
+
+      $('.post-toc a').on('click', function (e) {
+        e.preventDefault();
+        var offset = $(escapeSelector(this.getAttribute('href'))).offset().top;
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        });
+      });
+
+      // Expand sidebar on post detail page by default, when post has a toc.
+      var $tocContent = $('.post-toc-content');
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0 && isDesktop()) {
+        setTimeout(function () {
+          $('.sidebar-toggle').trigger('click');
+        }, 800);
+      }
+    });
+  </script>
+
+
+
+
+  
+
+  
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"dpsoxeoncom"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+
+
+  
+  
+</body>
+</html>

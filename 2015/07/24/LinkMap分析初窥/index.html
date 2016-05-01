@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LinkMap分析初窥 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="基础服务是为了开发人员更好的进行开发，LinkMap分析服务就是这样的存在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinkMap分析初窥">
+<meta property="og:url" content="http://yoursite.com/2015/07/24/LinkMap分析初窥/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="基础服务是为了开发人员更好的进行开发，LinkMap分析服务就是这样的存在">
+<meta property="og:updated_time" content="2015-07-24T03:36:26.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LinkMap分析初窥">
+<meta name="twitter:description" content="基础服务是为了开发人员更好的进行开发，LinkMap分析服务就是这样的存在">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-LinkMap分析初窥" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/24/LinkMap分析初窥/" class="article-date">
+  <time datetime="2015-07-24T03:20:57.000Z" itemprop="datePublished">2015-07-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      LinkMap分析初窥
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>基础服务是为了开发人员更好的进行开发，LinkMap分析服务就是这样的存在</p>
+<a id="more"></a>
+<hr>
+<p>###1.我们为什么要用LinkMap<br>当一个中大型iOS项目在不断迭代更新的过程中，代码量日渐壮大，需要重构和review的代码也越来越多，可一旦代码达到一定程度后变得不是那么可控，为了使得项目还可以持续可集成稳健的开发下去，缩小iOS安装包大小是必须要做的事情，通常会从压缩图片和音频文件开始，使用开发工具查找冗余不用的资源文件，这一阶段之后只能通过对代码的重构来达到可执行文件整体瘦身的效果。</p>
+<p>当从事参与的一个项目在不断迭代过程中，App的安装包在不断变大，通过自己的shell脚本分析，多达几十万行，这时候非常有瘦身的必要，这其中包括了.h.m.mm.cpp.rss格式文件。观察项目中引入的Pods文件及相关第三方库，多达上百个库，这时候这样一个中大型App就涉及到应用瘦身的问题，如何才能有效解决代码不可控的问题，如何能提高项目中底层基础架构的稳定性及健壮性，相信LinkMap能给予我们一些答案。</p>
+<p>###2.LinkMap是什么<br>在iOS开发领域，LinkMap可能对初学者是一个陌生的名词,简而言之，LinkMap的输出是一个纯文本格式的文件，里面包含重要的编译信息及报错信息，这也是Apple用来分析你的应用的主要方式，通过这种方式可以发现应用中是否使用了私有库等不符合Apple提交应用规范的内容，但对于我们开发人员，LinkMap却是一个用于分析源码及查看Crash的有效途径。</p>
+<p>###3.LinkMap的构成<br>一份完整的LinkMap文件中包含了一下几个部分：</p>
+<ol>
+<li><p>App的编译路径（#Path）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># Path: /Users/XXXXX/Library/Developer/Xcode/DerivedData/XXXXXXXXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/XXXXX.app/XXXXXXX</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<ol>
+<li><p>App对应的架构（#Arch）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># Arch: x86_64</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<ol>
+<li><p>App的完整的目标文件列表（#Object files）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">	[  1] /Users/XXXX/Library/Developer/Xcode/DerivedData/XXXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Intermediates/XXXXX.build/Debug-iphonesimulator/XXXX.build/Objects-normal/x86_64/main.o</span><br><span class="line">	[  2] /Users/XXXX/Library/Developer/Xcode/DerivedData/XXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXXX-XXX-AFHTTPRequestOperationLogger.a(AFHTTPRequestOperationLogger.o)</span><br><span class="line">	[  3] /Users/XX/Library/Developer/Xcode/DerivedData/XXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXX-XXX-AFHTTPRequestOperationLogger.a(Pods-XXX-XXX-AFHTTPRequestOperationLogger-dummy.o)</span><br><span class="line">	[  4] /Users/XX/Library/Developer/Xcode/DerivedData/XXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXX-XXX-AFNetworking.a(AFHTTPClient.o)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>App的段表（#Section）</p>
+<p> 段表标题中列举出了地址，大小，段类型以及段名称。<br> 数据类型分为两种不同类型，一种是<strong>TEXT，用于保存程序代码段经过编译后的机器码，另外一种是</strong>DATA用于保存诸如全局变量或者局部变量。<br> 段的区分更多，如<strong>cstring为字符串常量，</strong>bss表示未初始化的全局变量及局部静态变量，__const表示的是对应的不可变的变量。当然这一切的数据都是文件占用空间，并不是运行时的占用空间。</p>
+</li>
+</ol>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># Address	Size    	Segment	Section</span><br><span class="line">0x100001E80	0x0176F009	__TEXT	__text</span><br><span class="line">0x101770E8A	0x00002C58	__TEXT	__stubs</span><br><span class="line">0x101773AE4	0x00003288	__TEXT	__stub_helper</span><br><span class="line">0x101776D6C	0x000CD35C	__TEXT	__objc_methname</span><br><span class="line">0x1018440D0	0x0011D09D	__TEXT	__cstring</span><br><span class="line">0x10196116D	0x0001A327	__TEXT	__objc_classname</span><br><span class="line">0x10197B494	0x0001F64C	__TEXT	__objc_methtype</span><br><span class="line">0x10199AAE0	0x00077720	__TEXT	__const</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</code></pre><ol>
+<li><p>App中具体目标文件在对应的section中的位置和大小（#Symbols）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">0x100001E80	0x00000097	[  1] _main</span><br><span class="line">   0x100001F20	0x000000B0	[  2] +[AFHTTPRequestOperationLogger sharedLogger]</span><br><span class="line">   0x100001FD0	0x00000050	[  2] ___44+[AFHTTPRequestOperationLogger sharedLogger]_block_invoke</span><br><span class="line">0x100002020	0x00000010	[  2] ___copy_helper_block_</span><br><span class="line">0x100002030	0x00000010	[  2] ___destroy_helper_block_</span><br><span class="line">0x100002040	0x000000D0	[  2] -[AFHTTPRequestOperationLogger init]</span><br><span class="line">0x100002110	0x00000060	[  2] -[AFHTTPRequestOperationLogger dealloc]</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>###4.LinkMap服务的开启方式及文件目录</p>
+<ol>
+<li>Xcode-&gt;Project-&gt;Build Settings-&gt; Search map -&gt; 设置 Write Link Map Files 选项为YES（这里需要注意的是不是设置Pods.xcodeproj的LinkMap而是xxx-xxxxx.xcodeproj，其他项目也要去设置主工程的对应编译选项，以此类推）</li>
+<li>文件位于指定的路径，默认是在~/Library/Developer/Xcode/DerivedData/xxx-xxx-fwtuexpkzxsfkjaootcqwizogrhf/Build/Intermediates/xx-xxx.build/Debug-iphonesimulator/xxx-xxx.build/xxx-xxx-LinkMap-normal-x86_64.txt(文件路径顺序基本一致，文件名会有所不同，自行查看)</li>
+</ol>
+<p>###5.LinkMap服务化</p>
+<ul>
+<li>作为基础服务，我们直接看LinkMap文件有时候非常吃力，如果能够配合图形化的方式来分析应用，这样对于开发人员来说是大大的便利。</li>
+</ul>
+<p>###6.App瘦身及展望<br>App瘦身是目前天猫App需要解决的问题，不光是通过LinkMap分析源码，实际上还可以通过好几个维度进行瘦身，包括优化资源文件，优化编译选项，优化可执行文件，当然这些都可以继续深入细分。</p>
+<p>苹果官方也带来一些App瘦身好消息，WWDC2015带来一个App Thining的App瘦身功能，这是Xcode7测试版本的功能之一，App Thining根据用户设备类别和屏幕分辨率的不同来定制不同的下载包，这样为用户很好的节省了存储空间，相信这也是一种很好的App瘦身方式。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2015/07/24/LinkMap分析初窥/" data-id="cinoe4rsx0001e5is7xldlw8b" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/08/09/AsyncDisplayKit随想/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          AsyncDisplayKit随想
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/03/10/iOS-Animation-初窥/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">iOS Animation 初窥</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">August 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">July 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/03/">March 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/01/">January 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">December 2014</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/05/01/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/01/30/从Web-Mark-up-到-Universal-Link/">从Web Mark up 到 Universal Link</a>
+          </li>
+        
+          <li>
+            <a href="/2015/12/04/iOS9-Search-link-anythings/">iOS9 Search link anythings</a>
+          </li>
+        
+          <li>
+            <a href="/2015/08/09/AsyncDisplayKit随想/">AsyncDisplayKit随想</a>
+          </li>
+        
+          <li>
+            <a href="/2015/07/24/LinkMap分析初窥/">LinkMap分析初窥</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
