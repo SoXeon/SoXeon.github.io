@@ -31,7 +31,7 @@
 
 
 
-  <title> LinkMap分析初窥 // dpsoxeon </title>
+  <title> FLEX 一个轻量级App多维分析工具 // dpsoxeon </title>
 </head>
 
 <body>
@@ -103,7 +103,7 @@
           
           
             
-              LinkMap分析初窥
+              FLEX 一个轻量级App多维分析工具
             
           
         </h1>
@@ -111,7 +111,7 @@
 
       <div class="post-meta">
         <span class="post-time">
-          发表于 2015-07-24
+          发表于 2016-05-01
         </span>
 
         
@@ -128,48 +128,120 @@
       
 
       
-        <p>基础服务是为了开发人员更好的进行开发，LinkMap分析服务就是这样的存在</p>
-<a id="more"></a>
+        <p>工欲善其事，必先利其器。<br><a id="more"></a></p>
 <hr>
-<p>###1.我们为什么要用LinkMap<br>当一个中大型iOS项目在不断迭代更新的过程中，代码量日渐壮大，需要重构和review的代码也越来越多，可一旦代码达到一定程度后变得不是那么可控，为了使得项目还可以持续可集成稳健的开发下去，缩小iOS安装包大小是必须要做的事情，通常会从压缩图片和音频文件开始，使用开发工具查找冗余不用的资源文件，这一阶段之后只能通过对代码的重构来达到可执行文件整体瘦身的效果。</p>
-<p>当从事参与的一个项目在不断迭代过程中，App的安装包在不断变大，通过自己的shell脚本分析，多达几十万行，这时候非常有瘦身的必要，这其中包括了.h.m.mm.cpp.rss格式文件。观察项目中引入的Pods文件及相关第三方库，多达上百个库，这时候这样一个中大型App就涉及到应用瘦身的问题，如何才能有效解决代码不可控的问题，如何能提高项目中底层基础架构的稳定性及健壮性，相信LinkMap能给予我们一些答案。</p>
-<p>###2.LinkMap是什么<br>在iOS开发领域，LinkMap可能对初学者是一个陌生的名词,简而言之，LinkMap的输出是一个纯文本格式的文件，里面包含重要的编译信息及报错信息，这也是Apple用来分析你的应用的主要方式，通过这种方式可以发现应用中是否使用了私有库等不符合Apple提交应用规范的内容，但对于我们开发人员，LinkMap却是一个用于分析源码及查看Crash的有效途径。</p>
-<p>###3.LinkMap的构成<br>一份完整的LinkMap文件中包含了一下几个部分：</p>
+<h2 id="1-引子"><a href="#1-引子" class="headerlink" title="1.引子"></a>1.引子</h2><p>&emsp;&emsp;iOS App开发过程中总会遇到Debug、UI调整、查看系统Log等诉求，以往的Debug成本会随着App的复杂度不断提升，如何利用较少成本去快速Debug成了主要难题。今天咱就来详细介绍并分析iOS Debug工具 <a href="https://github.com/Flipboard/FLEX" target="_blank" rel="external">FLEX</a>，及其背后的原理思考。</p>
+<h2 id="2-iOS-Debug-工具调研"><a href="#2-iOS-Debug-工具调研" class="headerlink" title="2.iOS Debug 工具调研"></a>2.iOS Debug 工具调研</h2><p>&emsp;&emsp;要说Mac平台上的调试工具，从Xcode及自带强大的Instruments，再到各大厂商提供的调试开发工具，Reveal、Charles等都可圈可点，但是用成本都相对较高，如果只是需要对App进行简单Debug就可以用到一下工具，FLEX这一类的iOS Debug工具主要有这三种：</p>
 <ol>
-<li><p>App的编译路径（#Path）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># Path: /Users/XXXXX/Library/Developer/Xcode/DerivedData/XXXXXXXXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/XXXXX.app/XXXXXXX</span><br></pre></td></tr></table></figure>
+<li><p><a href="https://github.com/square/PonyDebugger" target="_blank" rel="external">PonyDebugger</a>大家有耳熟能详，功能丰富，但其繁琐的配置过程，也提升了一定的Debug成本。</p>
+</li>
+<li><p><a href="https://github.com/Legoless/Alpha" target="_blank" rel="external">Alpha</a>作为FLEX的后继者更具有灵活性，调用可以灵活定制需要接入的Debug功能，且DEBUG内容也更加丰富。</p>
+</li>
+<li><p><a href="https://github.com/Flipboard/FLEX" target="_blank" rel="external">FLEX</a>Flipboard公司出品的iOS调试工具。</p>
 </li>
 </ol>
-<ol>
-<li><p>App对应的架构（#Arch）</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># Arch: x86_64</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<ol>
-<li><p>App的完整的目标文件列表（#Object files）</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">	[  1] /Users/XXXX/Library/Developer/Xcode/DerivedData/XXXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Intermediates/XXXXX.build/Debug-iphonesimulator/XXXX.build/Objects-normal/x86_64/main.o</span><br><span class="line">	[  2] /Users/XXXX/Library/Developer/Xcode/DerivedData/XXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXXX-XXX-AFHTTPRequestOperationLogger.a(AFHTTPRequestOperationLogger.o)</span><br><span class="line">	[  3] /Users/XX/Library/Developer/Xcode/DerivedData/XXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXX-XXX-AFHTTPRequestOperationLogger.a(Pods-XXX-XXX-AFHTTPRequestOperationLogger-dummy.o)</span><br><span class="line">	[  4] /Users/XX/Library/Developer/Xcode/DerivedData/XXXXXX-fwtuexpkzxsfkjaootcqwizogrhf/Build/Products/Debug-iphonesimulator/libPods-XXX-XXX-AFNetworking.a(AFHTTPClient.o)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>App的段表（#Section）</p>
-<p> 段表标题中列举出了地址，大小，段类型以及段名称。<br> 数据类型分为两种不同类型，一种是<strong>TEXT，用于保存程序代码段经过编译后的机器码，另外一种是</strong>DATA用于保存诸如全局变量或者局部变量。<br> 段的区分更多，如<strong>cstring为字符串常量，</strong>bss表示未初始化的全局变量及局部静态变量，__const表示的是对应的不可变的变量。当然这一切的数据都是文件占用空间，并不是运行时的占用空间。</p>
-</li>
-</ol>
-<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># Address	Size    	Segment	Section</span><br><span class="line">0x100001E80	0x0176F009	__TEXT	__text</span><br><span class="line">0x101770E8A	0x00002C58	__TEXT	__stubs</span><br><span class="line">0x101773AE4	0x00003288	__TEXT	__stub_helper</span><br><span class="line">0x101776D6C	0x000CD35C	__TEXT	__objc_methname</span><br><span class="line">0x1018440D0	0x0011D09D	__TEXT	__cstring</span><br><span class="line">0x10196116D	0x0001A327	__TEXT	__objc_classname</span><br><span class="line">0x10197B494	0x0001F64C	__TEXT	__objc_methtype</span><br><span class="line">0x10199AAE0	0x00077720	__TEXT	__const</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-</code></pre><ol>
-<li><p>App中具体目标文件在对应的section中的位置和大小（#Symbols）</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">0x100001E80	0x00000097	[  1] _main</span><br><span class="line">   0x100001F20	0x000000B0	[  2] +[AFHTTPRequestOperationLogger sharedLogger]</span><br><span class="line">   0x100001FD0	0x00000050	[  2] ___44+[AFHTTPRequestOperationLogger sharedLogger]_block_invoke</span><br><span class="line">0x100002020	0x00000010	[  2] ___copy_helper_block_</span><br><span class="line">0x100002030	0x00000010	[  2] ___destroy_helper_block_</span><br><span class="line">0x100002040	0x000000D0	[  2] -[AFHTTPRequestOperationLogger init]</span><br><span class="line">0x100002110	0x00000060	[  2] -[AFHTTPRequestOperationLogger dealloc]</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>###4.LinkMap服务的开启方式及文件目录</p>
-<ol>
-<li>Xcode-&gt;Project-&gt;Build Settings-&gt; Search map -&gt; 设置 Write Link Map Files 选项为YES（这里需要注意的是不是设置Pods.xcodeproj的LinkMap而是xxx-xxxxx.xcodeproj，其他项目也要去设置主工程的对应编译选项，以此类推）</li>
-<li>文件位于指定的路径，默认是在~/Library/Developer/Xcode/DerivedData/xxx-xxx-fwtuexpkzxsfkjaootcqwizogrhf/Build/Intermediates/xx-xxx.build/Debug-iphonesimulator/xxx-xxx.build/xxx-xxx-LinkMap-normal-x86_64.txt(文件路径顺序基本一致，文件名会有所不同，自行查看)</li>
-</ol>
-<p>###5.LinkMap服务化</p>
-<ul>
-<li>作为基础服务，我们直接看LinkMap文件有时候非常吃力，如果能够配合图形化的方式来分析应用，这样对于开发人员来说是大大的便利。</li>
+<p>&emsp;&emsp;三者关系如下图所示，PonyDebugger作为最老牌的调试工具，FLEX、Alpha都一定程度上参考并改进，而FLEX处于稳定、活跃的状态，Alpha吸取了市面上相关的最前沿的Debug功能，走在最前面。：<img src="http://7te818.com1.z0.glb.clouddn.com/14563322137447.jpg?imageView/2/w/400/q/45" alt="Alpha &amp; FLEX &amp; PonyDebugger"></p>
+<h2 id="3-目前三者已知缺点："><a href="#3-目前三者已知缺点：" class="headerlink" title="3.目前三者已知缺点："></a>3.目前三者已知缺点：</h2><ol>
+<li>PonyDebugger<ul>
+<li>配置繁琐，需要在调用Chrome来实现Debug功能，调试成本高。</li>
+<li>目前更新频率较低，处于维护状态，没有更多新功能接入。</li>
 </ul>
-<p>###6.App瘦身及展望<br>App瘦身是目前天猫App需要解决的问题，不光是通过LinkMap分析源码，实际上还可以通过好几个维度进行瘦身，包括优化资源文件，优化编译选项，优化可执行文件，当然这些都可以继续深入细分。</p>
-<p>苹果官方也带来一些App瘦身好消息，WWDC2015带来一个App Thining的App瘦身功能，这是Xcode7测试版本的功能之一，App Thining根据用户设备类别和屏幕分辨率的不同来定制不同的下载包，这样为用户很好的节省了存储空间，相信这也是一种很好的App瘦身方式。</p>
+</li>
+<li>Alpha<ul>
+<li>最低支持版本是iOS8，导致最低版本为iOS7的App没有办法使用。</li>
+<li>Alpha自称为下一代的Debug工具，稳定性方面还有待提升，使用过程中比较容易crash。</li>
+</ul>
+</li>
+<li>FLEX<ul>
+<li>2.1.1版本以后最低支持版本iOS8，目前猫客接入版本为2.1.1-framework。</li>
+</ul>
+</li>
+</ol>
+<h2 id="4-FLEX相比前两者有一下两点好处"><a href="#4-FLEX相比前两者有一下两点好处" class="headerlink" title="4.FLEX相比前两者有一下两点好处"></a>4.FLEX相比前两者有一下两点好处</h2><ol>
+<li>没有PonyDebugger繁琐，也比Alpha更要稳定。（相对稳定，Heap Object这块有坑）</li>
+<li>维护开发还在持续不断，是个社区活跃的项目，新功能也在不断增加，例如SQLite的Debug功能、Realm explorer的支持。</li>
+</ol>
+<h2 id="5-FLEX支持功能"><a href="#5-FLEX支持功能" class="headerlink" title="5.FLEX支持功能"></a>5.FLEX支持功能</h2><ol>
+<li>查看、实时修改view。（与Reveal相关功能类似，视觉验证中非常有用）</li>
+<li>监控网络请求记录。（与Charles抓包功能类似）</li>
+<li>快速查看SystemLog。（非开发人员很方便）</li>
+<li>sandbox内容查看，数据持久化都可以看到~（.db SQLite查看2.1.1版本暂时不支持，json、plist都支持）</li>
+<li>Heap Object查看功能，这块暂时不够稳定，慎点！</li>
+<li>查看App中所有的类以及所用到的系统Framework。</li>
+<li>3D-touch模拟器支持（2.1.1后续版本支持）</li>
+<li>其他功能在不断支持中~</li>
+<li>使用文档详见<a href="https://github.com/Flipboard/FLEX/blob/master/README.md" target="_blank" rel="external">README</a></li>
+</ol>
+<h2 id="6-FLEX主要面向三类人员使用："><a href="#6-FLEX主要面向三类人员使用：" class="headerlink" title="6.FLEX主要面向三类人员使用："></a>6.FLEX主要面向三类人员使用：</h2><ol>
+<li>开发人员 (啥功能都有用…,还有越狱手机可以代码注入查看其他App，学习其他App，<a href="http://petersteinberger.com/blog/2013/how-to-inspect-the-view-hierarchy-of-3rd-party-apps/" target="_blank" rel="external">code injection</a>)</li>
+<li>测试人员（系统Log、网络抓包…）</li>
+<li>设计人员 (视觉走查…）<ul>
+<li>5.16.0猫客快捷测试入口已加入FLEX调试入口，需要注意iOS9以上查看Heap Object会Crash, 在@知兵帮助下顺利定位，已提pull request。</li>
+<li>我们可以通过FLEXManager暴露的接口来新增快捷键以及在Menu里增加新内容。</li>
+<li>模拟器下默认开启了FLEX快捷键，默认快捷键如下图所示：</li>
+<li><img src="http://7te818.com1.z0.glb.clouddn.com/14564555925272.jpg?imageView/2/w/400/q/45" alt=""></li>
+</ul>
+</li>
+</ol>
+<h2 id="7-FLEX原理解析"><a href="#7-FLEX原理解析" class="headerlink" title="7.FLEX原理解析"></a>7.FLEX原理解析</h2><p>FLEX项目结构解析<br><img src="http://7te818.com1.z0.glb.clouddn.com/14564758144527.jpg?imageView/2/w/800/q/100" alt=""></p>
+<h2 id="8-FLEX调试工具解析"><a href="#8-FLEX调试工具解析" class="headerlink" title="8.FLEX调试工具解析"></a>8.FLEX调试工具解析</h2><ol>
+<li><p>FLEX主要功能如下</p>
+<ol>
+<li>视图工具<ul>
+<li>利用私有API获取当前视图中的allWindow,并递归解析出View的的结构</li>
+<li>每个节点又可以使用ExplorerViewController去查看详细的View情况</li>
+</ul>
+</li>
+<li><p>动态修改</p>
+<ul>
+<li>Property</li>
+<li>Var</li>
+<li>method</li>
+<li>以上的动态修改点都是基于Runtime以及NSInvocation进行动态的改动，FLEX对Color、Font、Text、Switch多种状态的修改都提供支持，详见Editing/ArgumentInputViews目录。</li>
+</ul>
+</li>
+<li><p>网络请求历史记录</p>
+<ul>
+<li>底层基于PonyDebugger的网络监控</li>
+<li>通过Swizzle网络请求相关的NSURLSession、NSURLConnection Delegate的形式将整个网络过程中涉及的请求全部捕获住</li>
+<li>swizzle里iOS中网络请求的私有API:<strong>NSCFLocalSessionTask,NSURLSessionTask,</strong>NSCFURLSessionTask</li>
+</ul>
+</li>
+<li><p>系统日志</p>
+<ul>
+<li>调用系统提供的asl.h，提供了timestamp,sender,messageText,messageID的主要相关信息</li>
+<li>将系统日志以由近及远形式展现</li>
+</ul>
+</li>
+<li><p>文件检索</p>
+<ul>
+<li>检索NSHomeDirectory()下面的所有内容</li>
+<li>利用NSFileManager来获取具体的文件夹或文件信息</li>
+<li>内部增加Realm检索、FMDB针对SQLite的验证</li>
+</ul>
+</li>
+<li><p>自定义组件</p>
+<ul>
+<li>通过registerGlobalEntryWithName的形式可以在Menu中新增自定义的调试或者说明文档</li>
+</ul>
+</li>
+<li><p>Heap Object</p>
+<ul>
+<li>Heap上极其不稳定，尤其是查看string这类东西，在短时间内其数量会有很大浮动，很有可能在查看Heap上某个具体对象时候，该对象就被销毁了。</li>
+<li>Heap Object实际意义对开发人员也并不是很大。</li>
+</ul>
+</li>
+<li><p>重要组件</p>
+<ul>
+<li>FLEXRuntimeUtility (runtime)</li>
+<li>FLEXObjectExplorerViewController(Any Object Explore)</li>
+<li>FLEXUtility(Swizzle)</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="9-整理"><a href="#9-整理" class="headerlink" title="9.整理"></a>9.整理</h2><p>&emsp;&emsp;通过窥看FLEX内部的实现，对runtime、Swizzle、以及对系统、设备状态信息有了更全面的认识，日后也可以在开发中运用到，很多实现方式都可以效仿。</p>
 
       
     </div>
@@ -181,13 +253,13 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/09/AsyncDisplayKit随想/">AsyncDisplayKit随想</a>
+              <a href="/2016/05/01/FLEX-一个轻量级iOS-App多维分析工具/">FLEX 一个轻量级iOS App多维分析工具</a>
             
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/03/10/iOS-Animation-初窥/">iOS Animation 初窥</a>
+              <a href="/2016/01/30/从Web-Mark-up-到-Universal-Link/">从Web Mark up 到 Universal Link</a>
             
           </div>
         </div>
@@ -299,7 +371,7 @@
           <div class="post-toc">
             
             
-              <p class="post-toc-empty">此文章未包含目录</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-引子"><span class="nav-number">1.</span> <span class="nav-text">1.引子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-iOS-Debug-工具调研"><span class="nav-number">2.</span> <span class="nav-text">2.iOS Debug 工具调研</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-目前三者已知缺点："><span class="nav-number">3.</span> <span class="nav-text">3.目前三者已知缺点：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-FLEX相比前两者有一下两点好处"><span class="nav-number">4.</span> <span class="nav-text">4.FLEX相比前两者有一下两点好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-FLEX支持功能"><span class="nav-number">5.</span> <span class="nav-text">5.FLEX支持功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-FLEX主要面向三类人员使用："><span class="nav-number">6.</span> <span class="nav-text">6.FLEX主要面向三类人员使用：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-FLEX原理解析"><span class="nav-number">7.</span> <span class="nav-text">7.FLEX原理解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-FLEX调试工具解析"><span class="nav-number">8.</span> <span class="nav-text">8.FLEX调试工具解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-整理"><span class="nav-number">9.</span> <span class="nav-text">9.整理</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
